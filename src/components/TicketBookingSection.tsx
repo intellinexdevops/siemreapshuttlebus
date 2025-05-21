@@ -4,10 +4,11 @@ import TextField from "@mui/material/TextField"
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import moment from 'moment';
-import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import { FormControl, IconButton, InputAdornment, InputLabel, MenuItem, OutlinedInput, Select, SelectChangeEvent } from '@mui/material';
 import Image from 'next/image';
 import { Button } from './ui/button';
 import Link from 'next/link';
+import SwapHorizOutlined from "@mui/icons-material/SwapHorizOutlined"
 
 const TicketBookingSection = () => {
     const today = new Date();
@@ -101,6 +102,21 @@ const TicketBookingSection = () => {
         }
     };
 
+    const [direction, setDirection] = useState("from");
+    const airport = "SR Int. Airport";
+    const siemreap = "Siem Reap Town";
+    const [displayDirection, setDisplayDirection] = useState<string>(`${airport} - ${siemreap}`)
+
+    const handleOnSwapChange = () => {
+        if (direction === "from") {
+            setDirection("to")
+            setDisplayDirection(`${siemreap} - ${airport}`)
+        } else {
+            setDirection("from")
+            setDisplayDirection(`${airport} - ${siemreap}`)
+        }
+    }
+
     return (
         <section className='mt-[132px]' >
             <div className='container mx-auto bg-white p-5 rounded-lg'>
@@ -113,13 +129,25 @@ const TicketBookingSection = () => {
                 <div className='mt-6'>
                     <div className='grid grid-cols-1 lg:grid-cols-6 md:grid-cols-2 gap-x-4 gap-y-8'>
                         <div className='col-span-2'>
-                            <TextField
-                                required
-                                id="outlined-required"
-                                label="From - To"
-                                defaultValue="Hello World"
-                                className='w-full'
-                            />
+                            <FormControl fullWidth variant='outlined'>
+                                <InputLabel htmlFor="direction">From - To</InputLabel>
+                                <OutlinedInput
+                                    id='direction'
+                                    type='text'
+                                    label="From - To"
+                                    value={displayDirection}
+                                    endAdornment={
+                                        <InputAdornment position='end'>
+                                            <IconButton
+                                                aria-label='swap'
+                                                edge="end"
+                                                onClick={handleOnSwapChange}
+                                            />
+                                            <SwapHorizOutlined />
+                                        </InputAdornment>
+                                    }
+                                />
+                            </FormControl>
                         </div>
 
                         <div className='relative lg:col-span-1 col-span-2'>
@@ -272,7 +300,7 @@ const TicketBookingSection = () => {
                     </div>
                 </div>
                 <div className='mt-6 grid lg:grid-cols-6 grid-cols-1 gap-4'>
-                    <div className='grid lg:grid-cols-3 grid-cols-1 items-center gap-5 lg:col-span-5'>
+                    <div className='grid lg:grid-cols-3 grid-cols-1 items-center gap-3 lg:col-span-5'>
                         <div className='flex items-center gap-1.5'>
                             <Image
                                 src="/bus2.svg"
