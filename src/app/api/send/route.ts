@@ -1,4 +1,6 @@
-import { EmailTemplate } from "@/components/EmailTemplate";
+// import { EmailTemplate } from "@/components/EmailTemplate";
+import EmailTemplate from "@/emails/booking-ticket/booking-ticket-v1";
+import moment from "moment";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
@@ -8,29 +10,57 @@ export async function POST(request: Request) {
   try {
     const requestData = await request.json();
 
-    if (!requestData.to) {
+    const { to, name, passager, phone, price, ticketType } = requestData;
+
+    if (!to || !name || !passager || !phone || !price || !ticketType) {
       return NextResponse.json(
         { error: "Recipient email(s) are required and must be an array" },
         { status: 400 }
       );
     }
 
+    const today = new Date();
+
+    const total = Number(passager) * Number(price);
+
+    const bookingId = `BK-${Date.now().toString().slice(-6)}`;
+
     const { data, error } = await resend.emails.send({
-      from: "Acme <no-reply@twelvemadeit.com>",
+      from: "no-reply <support@twelvemadeit.com>",
       to: [requestData.to],
-      subject: `Hi ${requestData.name}, You have successfully tested email sender!`,
+      subject: `Siem Reap Shuttle Bus Booking Confirmation #${bookingId}`,
       react: await EmailTemplate({
-        firstName: requestData.name || "John",
+        name: requestData.name || "John",
+        email: requestData.to,
+        issuedDate: moment(today).format("MMM DD, YYYY HH:mm:ss"),
+        passager: parseInt(requestData.passager),
+        phone: requestData.phone,
+        price: requestData.price,
+        ticketType: requestData.ticketType,
+        total: total.toString(),
       }),
-      cc: ["chenterphai@gmail.com"],
+      cc: ["support@twelvemadeit.com"],
     });
 
     if (error) {
-      return Response.json({ error }, { status: 500 });
+      return NextResponse.json(
+        {
+          code: 1,
+          msg: "Something went wrong",
+          status: "error",
+        },
+        { status: 500 }
+      );
     }
 
-    return Response.json(data);
+    return NextResponse.json(data);
   } catch (error) {
-    return Response.json({ error }, { status: 500 });
+    return NextResponse.json(
+      {
+        code: 1,
+        error,
+      },
+      { status: 500 }
+    );
   }
 }
