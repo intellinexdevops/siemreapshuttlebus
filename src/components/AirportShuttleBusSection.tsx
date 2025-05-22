@@ -31,7 +31,7 @@ const AirportShuttleBusSection = () => {
                             </p>
                         </div>
                         <div className='mt-24'>
-                            <Button className='bg-white text-neutral-800 w-full py-5'>
+                            <Button className='bg-white text-neutral-800 w-full py-5 cursor-pointer hover:bg-neutral-200'>
                                 View Maps
                             </Button>
                         </div>

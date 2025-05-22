@@ -16,12 +16,13 @@ export async function POST(request: Request) {
     }
 
     const { data, error } = await resend.emails.send({
-      from: "Acme <chenterphai61@sender.rocketter.net>",
+      from: "Acme <no-reply@twelvemadeit.com>",
       to: [requestData.to],
-      subject: "Hi Kemleap, You have successfully tested email sender!",
+      subject: `Hi ${requestData.name}, You have successfully tested email sender!`,
       react: await EmailTemplate({
         firstName: requestData.name || "John",
       }),
+      cc: ["chenterphai@gmail.com"],
     });
 
     if (error) {
