@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build && email build --dir src/emails",
-    "start": "next start",
+    "start": "node .next/standalone/server.js",
     "lint": "next lint",
     "email": "email dev --dir src/emails"
   },
@@ -15,6 +15,7 @@
     "@mui/icons-material": "^7.1.0",
     "@mui/material": "^7.1.0",
     "@radix-ui/react-alert-dialog": "^1.1.14",
+    "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-slot": "^1.2.3",
     "@react-email/components": "0.0.41",
     "@react-email/font": "0.0.9",

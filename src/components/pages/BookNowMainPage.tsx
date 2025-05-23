@@ -12,6 +12,16 @@ import axios from 'axios';
 import Loading from '@/app/loading';
 import { useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
+import {
+    Dialog,
+    DialogContent,
+    // DialogDescription,
+    // DialogFooter,
+    // DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
+import Image from 'next/image';
+import Link from 'next/link';
 
 type CustomerInfoType = Partial<{
     firstName: string;
@@ -172,6 +182,7 @@ const BookNowMainPage = () => {
     const [customerInfo, setCustomerInfo] = useState<CustomerInfoType | null>(null)
 
     const [isLoading, setIsLoading] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
 
     const handleBookNow = async () => {
         setIsLoading(true);
@@ -190,6 +201,7 @@ const BookNowMainPage = () => {
 
             if (response.data.status.code === 0) {
                 setCustomerInfo(null)
+                setIsSuccess(true)
             }
         } catch (e) {
             console.log(e)
@@ -495,6 +507,38 @@ const BookNowMainPage = () => {
                     </div>
                 </div>
             </div>
+            <Dialog modal open={isSuccess} onOpenChange={setIsSuccess}>
+                <DialogTitle>
+                </DialogTitle>
+                <DialogContent>
+                    <div className='flex flex-col items-center justify-center'>
+                        <Image
+                            src="/email-tick.svg"
+                            alt='Success Booking'
+                            width={50}
+                            height={50}
+                            loading='lazy'
+                        />
+                        <p className='md:text-xl text-center text-lg font-medium text-neutral-700 mt-4'>
+                            Your booking has been confirmed!
+                        </p>
+                        <p className='text-sm text-neutral-500 mt-2 text-center'>
+                            Check your email for detail and bring <br /> confirmation number upon arrival.
+                        </p>
+                        <div className='mt-6 flex items-center gap-x-4'>
+                            <Link href='/booking-detail'>
+                                <Button className='h-10 px-5 rounded cursor-pointer bg-neutral-100 text-neutral-500 hover:bg-neutral-200' onClick={() => setCustomerInfo(null)}>
+                                    View Detail
+                                </Button>
+                            </Link>
+
+                            <Button className='h-10 px-8 rounded cursor-pointer' onClick={() => setIsSuccess(false)}>
+                                Done
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </section>
     )
 }

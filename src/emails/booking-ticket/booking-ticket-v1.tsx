@@ -315,8 +315,8 @@ export default async function EmailTemplate({
 
 
 const header = {
-    backgroundImage: `url("${imageUrl}/email-bg.png")`,
-    padding: 16
+    backgroundColor: colorPrimary,
+    padding: 16,
 }
 
 const container = {
