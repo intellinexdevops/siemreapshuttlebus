@@ -5,10 +5,20 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import moment from 'moment';
 import { FormControl, IconButton, InputAdornment, InputLabel, MenuItem, OutlinedInput, Select, SelectChangeEvent } from '@mui/material';
-import Link from 'next/link';
 import SwapHorizOutlined from "@mui/icons-material/SwapHorizOutlined"
 import { Button } from '../ui/button';
 import ReCAPTCHA from "react-google-recaptcha";
+import axios from 'axios';
+import Loading from '@/app/loading';
+
+type CustomerInfoType = Partial<{
+    firstName: string;
+    lastName: string;
+    email: string;
+    phoneNumber: string;
+    paymentInfo: string;
+    specialRequest: string;
+}>
 
 const BookNowMainPage = () => {
     const today = new Date();
@@ -155,8 +165,42 @@ const BookNowMainPage = () => {
         setIsVerified(false);
     }
 
+    const [customerInfo, setCustomerInfo] = useState<CustomerInfoType | null>(null)
+
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleBookNow = async () => {
+        setIsLoading(true);
+        try {
+
+
+            const data = {
+                to: customerInfo?.email,
+                name: `${customerInfo?.firstName} ${customerInfo?.lastName}`,
+                ticketType: "Airplane Ticket",
+                phone: customerInfo?.phoneNumber,
+                passager: Number(passager),
+                price: "35",
+                email: customerInfo?.email
+            }
+
+            const response = await axios.post('/api/send', data)
+
+            if (response.data.status.code === 0) {
+                setCustomerInfo(null)
+            }
+        } catch (e) {
+            console.log(e)
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
     return (
         <section className='mt-[132px] mb-[100px]' >
+            {isLoading && (
+                <Loading />
+            )}
             <div className='container mx-auto bg-white p-5 rounded-lg'>
                 <div className='flex'>
                     <div className='flex flex-col gap-y-2'>
@@ -350,22 +394,30 @@ const BookNowMainPage = () => {
                             label="First name"
                             type='text'
                             id='firstname'
+                            value={customerInfo?.firstName ?? ""}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustomerInfo({ ...customerInfo, firstName: e.target.value })}
                         />
                         <TextField
                             required
                             label="Last name"
                             type='text'
                             id='lastname'
+                            value={customerInfo?.lastName ?? ""}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustomerInfo({ ...customerInfo, lastName: e.target.value })}
                         />
                         <TextField
                             required
                             label="Email"
                             type='email'
+                            value={customerInfo?.email ?? ""}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustomerInfo({ ...customerInfo, email: e.target.value })}
                         />
                         <TextField
                             required
                             label="Phone Number"
                             type='text'
+                            value={customerInfo?.phoneNumber ?? ""}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustomerInfo({ ...customerInfo, phoneNumber: e.target.value })}
                         />
                         <FormControl fullWidth>
                             <InputLabel id="payment-select-label">Payment Method</InputLabel>
@@ -378,7 +430,7 @@ const BookNowMainPage = () => {
                             >
                                 <MenuItem value={'cash'}>Cash</MenuItem>
                                 <MenuItem value={'khqr'}>KHQR</MenuItem>
-                                <MenuItem value={'abapay'}>ABA PAY</MenuItem>
+                                <MenuItem value={'abapay'}>Credit Card</MenuItem>
                             </Select>
                         </FormControl>
                         <div className='col-span-2'>
@@ -390,6 +442,8 @@ const BookNowMainPage = () => {
                                 id='special-request'
                                 placeholder='Ex: I need a bottle of water'
                                 maxRows={4}
+                                value={customerInfo?.specialRequest ?? ""}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustomerInfo({ ...customerInfo, specialRequest: e.target.value })}
                             />
                         </div>
                     </div>
@@ -404,11 +458,11 @@ const BookNowMainPage = () => {
                         />
                     </div>
                     <div className=''>
-                        <Link href="/book-ticket">
-                            <Button className='h-12 w-full rounded cursor-pointer' disabled={!isVerified}>
-                                Book Now
-                            </Button>
-                        </Link>
+
+                        <Button className='h-12 w-full rounded cursor-pointer' disabled={!isVerified} onClick={handleBookNow}>
+                            Book Now
+                        </Button>
+
                     </div>
                 </div>
             </div>

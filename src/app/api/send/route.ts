@@ -53,7 +53,14 @@ export async function POST(request: Request) {
       );
     }
 
-    return NextResponse.json(data);
+    return NextResponse.json({
+      status: {
+        code: 0,
+        status: "success",
+        msg: "Successfully booked!",
+      },
+      data,
+    });
   } catch (error) {
     return NextResponse.json(
       {

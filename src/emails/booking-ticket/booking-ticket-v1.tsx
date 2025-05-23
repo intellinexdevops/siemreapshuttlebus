@@ -29,8 +29,8 @@ interface EmailTemplateProps {
 const colorPrimary = "#1C6AE4";
 const colorText = "#262626";
 
-// const imageUrl = process.env.NEXT_PUBLIC_IMAGE_URL
-const imageUrl = "https://siemreapshuttlebus.netlify.app/"
+// const imageUrl = process.env.NEXT_PUBLIC_IMAGE_URL!
+const imageUrl = "https://siemreapshuttlebus.netlify.app"
 
 export default async function EmailTemplate({
     name = "Chenter",
@@ -54,7 +54,7 @@ export default async function EmailTemplate({
                         <Section>
                             <Container>
                                 <Img
-                                    src={`${imageUrl}bus_icon.svg`}
+                                    src={`${imageUrl}/bus_icon.svg`}
                                     alt='Logo'
                                     width={60}
                                     height={60}
@@ -93,7 +93,7 @@ export default async function EmailTemplate({
                                 <Column width={50} align='left'>
                                     <Container style={{ backgroundColor: "#1C6AE410", width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 6 }}>
                                         <Img
-                                            src={`${imageUrl}ticket.svg`}
+                                            src={`${imageUrl}/ticket.svg`}
                                             width={28}
                                             height={28}
                                         />
@@ -168,7 +168,7 @@ export default async function EmailTemplate({
                                                 <Column align='left' width={46}>
                                                     <Container style={{ width: 46, height: 46, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#1C6AE410", borderRadius: 99, marginRight: 10 }}>
                                                         <Img
-                                                            src={`${imageUrl}user.svg`}
+                                                            src={`${imageUrl}/user.svg`}
                                                             width={20}
                                                             height={20}
                                                             alt='Username'
@@ -188,7 +188,7 @@ export default async function EmailTemplate({
                                                 <Column align='left' width={46}>
                                                     <Container style={{ width: 46, height: 46, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#1C6AE410", borderRadius: 99, marginRight: 10 }}>
                                                         <Img
-                                                            src={`${imageUrl}phone.svg`}
+                                                            src={`${imageUrl}/phone.svg`}
                                                             width={20}
                                                             height={20}
                                                             alt='Phone'
@@ -211,7 +211,7 @@ export default async function EmailTemplate({
                                                 <Column align='left' width={46}>
                                                     <Container style={{ width: 46, height: 46, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#1C6AE410", borderRadius: 99, marginRight: 10 }}>
                                                         <Img
-                                                            src={`${imageUrl}email.svg`}
+                                                            src={`${imageUrl}/email.svg`}
                                                             width={20}
                                                             height={20}
                                                             alt='email'
@@ -243,7 +243,7 @@ export default async function EmailTemplate({
                                                 <Column align='left' width={46}>
                                                     <Container style={{ width: 46, height: 46, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#1C6AE410", borderRadius: 99, marginRight: 10 }}>
                                                         <Img
-                                                            src={`${imageUrl}email.svg`}
+                                                            src={`${imageUrl}/email.svg`}
                                                             width={20}
                                                             height={20}
                                                             alt='Our Email'
@@ -265,7 +265,7 @@ export default async function EmailTemplate({
                                                 <Column align='left' width={46}>
                                                     <Container style={{ width: 46, height: 46, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#1C6AE410", borderRadius: 99, marginRight: 10 }}>
                                                         <Img
-                                                            src={`${imageUrl}phone.svg`}
+                                                            src={`${imageUrl}/phone.svg`}
                                                             width={20}
                                                             height={20}
                                                             alt='Phone'
@@ -291,7 +291,7 @@ export default async function EmailTemplate({
 
 
 const header = {
-    backgroundImage: `url("${imageUrl}email-bg.svg")`,
+    backgroundImage: `url("${imageUrl}/email-bg.svg")`,
     padding: 16
 }
 
