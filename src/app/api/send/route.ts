@@ -23,10 +23,10 @@ export async function POST(request: Request) {
 
     const total = Number(passager) * Number(price);
 
-    const bookingId = `BK-${Date.now().toString().slice(-6)}`;
+    const bookingId = `SR-${Date.now().toString().slice(-6)}`;
 
     const { data, error } = await resend.emails.send({
-      from: "no-reply <support@twelvemadeit.com>",
+      from: "no-reply <support@mail.siemreapshuttlebus.com>",
       to: [requestData.to],
       subject: `Siem Reap Shuttle Bus Booking Confirmation #${bookingId}`,
       react: await EmailTemplate({
@@ -38,8 +38,9 @@ export async function POST(request: Request) {
         price: requestData.price,
         ticketType: requestData.ticketType,
         total: total.toString(),
+        orderRef: bookingId,
       }),
-      cc: ["support@twelvemadeit.com"],
+      cc: ["khonkhen@siemreapshuttlebus.com"],
     });
 
     if (error) {
@@ -53,7 +54,14 @@ export async function POST(request: Request) {
       );
     }
 
-    return NextResponse.json(data);
+    return NextResponse.json({
+      status: {
+        code: 0,
+        status: "success",
+        msg: "Successfully booked!",
+      },
+      data,
+    });
   } catch (error) {
     return NextResponse.json(
       {

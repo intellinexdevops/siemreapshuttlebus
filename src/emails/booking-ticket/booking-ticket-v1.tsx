@@ -24,13 +24,14 @@ interface EmailTemplateProps {
     passager?: number;
     phone?: string;
     email?: string;
+    orderRef?: string;
 }
 
 const colorPrimary = "#1C6AE4";
 const colorText = "#262626";
 
-// const imageUrl = process.env.NEXT_PUBLIC_IMAGE_URL
-const imageUrl = "https://siemreapshuttlebus.netlify.app/"
+// const imageUrl = "http://localhost:3000"
+const imageUrl = "https://siemreapshuttlebus.netlify.app"
 
 export default async function EmailTemplate({
     name = "Chenter",
@@ -40,7 +41,8 @@ export default async function EmailTemplate({
     price = "35",
     passager = 3,
     phone = "0964903404",
-    email = "chenterphai@gmail.com"
+    email = "chenterphai@gmail.com",
+    orderRef = "SR-123456",
 }: EmailTemplateProps) {
     return (
         <Html>
@@ -52,26 +54,48 @@ export default async function EmailTemplate({
                 <Container style={container}>
                     <Container style={header}>
                         <Section>
+                            <Row width={100} align='left'>
+                                <Column width={60}>
+                                    <Img
+                                        src={`${imageUrl}/bus_icon.png`}
+                                        alt='Logo'
+                                        width={50}
+                                        height={50}
+                                        loading='lazy'
+                                    />
+                                </Column>
+                                <Column align='right'>
+                                    <Container style={{ width: 36, height: 36, backgroundColor: "white", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                        <Img
+                                            src={`${imageUrl}/logo.png`}
+                                            alt='Logo'
+                                            width={24}
+                                            height={24}
+                                            loading='lazy'
+                                        />
+                                    </Container>
+                                </Column>
+                            </Row>
                             <Container>
-                                <Img
-                                    src={`${imageUrl}bus_icon.svg`}
-                                    alt='Logo'
-                                    width={60}
-                                    height={60}
-                                    loading='lazy'
-                                />
+                                <Text style={{ fontSize: 24, fontWeight: "bold", textTransform: "uppercase", color: "#ffffff" }}>Siem Reap Shuttle Bus</Text>
+                                <Text style={{ fontSize: 18, color: "white", fontWeight: "600", lineHeight: 1 }} >Confirm!</Text>
                             </Container>
-                            <Text style={{ fontSize: 24, fontWeight: "bold", textTransform: "uppercase", color: "#ffffff" }}>Siem Reap Shuttle Bus</Text>
-                            <Text style={{ fontSize: 18, color: "white", fontWeight: "600", lineHeight: 1 }} >Confirm!</Text>
                             <Container>
                                 <Text style={{ fontSize: 18, color: "white", fontWeight: "600", lineHeight: 0 }}>Hello {name},</Text>
                                 <Text style={{ fontSize: 14, color: "white", lineHeight: 1 }}>Your booking is successfully complete!</Text>
+                            </Container>
+
+                            <Container>
+                                <Text style={{ fontSize: 14, color: "white", lineHeight: 0 }}>Order Ref:</Text>
+                                <Container align='left' style={{ backgroundColor: "#ffffff10", width: 120, height: 30, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 6, marginTop: 4 }}>
+                                    <Text style={{ fontSize: 16, color: "white", lineHeight: 1, fontWeight: "600" }}>{orderRef}</Text>
+                                </Container>
                             </Container>
                         </Section>
                     </Container>
 
                     <Section style={{ padding: 16, }} >
-                        <Row width="100%">
+                        <Row>
                             <Column colSpan={2}>
                                 <Text style={{ lineHeight: 1, fontSize: 16, color: "gray" }}>TOTAL</Text>
                                 <Text style={{ lineHeight: 0, color: colorPrimary, fontSize: 17, fontWeight: "500" }}>${parseFloat(total!).toFixed(2)}</Text>
@@ -93,7 +117,7 @@ export default async function EmailTemplate({
                                 <Column width={50} align='left'>
                                     <Container style={{ backgroundColor: "#1C6AE410", width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 6 }}>
                                         <Img
-                                            src={`${imageUrl}ticket.svg`}
+                                            src={`${imageUrl}/ticket.png`}
                                             width={28}
                                             height={28}
                                         />
@@ -165,12 +189,12 @@ export default async function EmailTemplate({
                                     <Column align='left'>
                                         <Container align='left' width="50%">
                                             <Row align='left'>
-                                                <Column align='left' width={46}>
-                                                    <Container style={{ width: 46, height: 46, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#1C6AE410", borderRadius: 99, marginRight: 10 }}>
+                                                <Column align='left' width={40}>
+                                                    <Container style={{ width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#1C6AE410", borderRadius: 99, marginRight: 10 }}>
                                                         <Img
-                                                            src={`${imageUrl}user.svg`}
-                                                            width={20}
-                                                            height={20}
+                                                            src={`${imageUrl}/user.png`}
+                                                            width={16}
+                                                            height={16}
                                                             alt='Username'
                                                         />
                                                     </Container>
@@ -185,12 +209,12 @@ export default async function EmailTemplate({
                                     <Column>
                                         <Container>
                                             <Row>
-                                                <Column align='left' width={46}>
-                                                    <Container style={{ width: 46, height: 46, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#1C6AE410", borderRadius: 99, marginRight: 10 }}>
+                                                <Column align='left' width={40}>
+                                                    <Container style={{ width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#1C6AE410", borderRadius: 99, marginRight: 10 }}>
                                                         <Img
-                                                            src={`${imageUrl}phone.svg`}
-                                                            width={20}
-                                                            height={20}
+                                                            src={`${imageUrl}/phone.png`}
+                                                            width={16}
+                                                            height={16}
                                                             alt='Phone'
                                                         />
                                                     </Container>
@@ -208,12 +232,12 @@ export default async function EmailTemplate({
                                     <Column align='left'>
                                         <Container align='left' style={{ marginTop: 13 }}>
                                             <Row align='left'>
-                                                <Column align='left' width={46}>
-                                                    <Container style={{ width: 46, height: 46, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#1C6AE410", borderRadius: 99, marginRight: 10 }}>
+                                                <Column align='left' width={40}>
+                                                    <Container style={{ width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#1C6AE410", borderRadius: 99, marginRight: 10 }}>
                                                         <Img
-                                                            src={`${imageUrl}email.svg`}
-                                                            width={20}
-                                                            height={20}
+                                                            src={`${imageUrl}/email.png`}
+                                                            width={16}
+                                                            height={16}
                                                             alt='email'
                                                         />
                                                     </Container>
@@ -240,12 +264,12 @@ export default async function EmailTemplate({
                                     <Column align='left'>
                                         <Container align='left'>
                                             <Row align='left'>
-                                                <Column align='left' width={46}>
-                                                    <Container style={{ width: 46, height: 46, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#1C6AE410", borderRadius: 99, marginRight: 10 }}>
+                                                <Column align='left' width={40}>
+                                                    <Container style={{ width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#1C6AE410", borderRadius: 99, marginRight: 10 }}>
                                                         <Img
-                                                            src={`${imageUrl}email.svg`}
-                                                            width={20}
-                                                            height={20}
+                                                            src={`${imageUrl}/email.png`}
+                                                            width={16}
+                                                            height={16}
                                                             alt='Our Email'
                                                         />
                                                     </Container>
@@ -262,12 +286,12 @@ export default async function EmailTemplate({
                                     <Column>
                                         <Container style={{ marginTop: 12 }}>
                                             <Row>
-                                                <Column align='left' width={46}>
-                                                    <Container style={{ width: 46, height: 46, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#1C6AE410", borderRadius: 99, marginRight: 10 }}>
+                                                <Column align='left' width={40}>
+                                                    <Container style={{ width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#1C6AE410", borderRadius: 99, marginRight: 10 }}>
                                                         <Img
-                                                            src={`${imageUrl}phone.svg`}
-                                                            width={20}
-                                                            height={20}
+                                                            src={`${imageUrl}/phone.png`}
+                                                            width={16}
+                                                            height={16}
                                                             alt='Phone'
                                                         />
                                                     </Container>
@@ -291,7 +315,7 @@ export default async function EmailTemplate({
 
 
 const header = {
-    backgroundImage: `url("${imageUrl}email-bg.svg")`,
+    backgroundImage: `url("${imageUrl}/email-bg.png")`,
     padding: 16
 }
 
