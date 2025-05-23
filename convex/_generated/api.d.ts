@@ -13,6 +13,7 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as airplane_time from "../airplane_time.js";
 import type * as tasks from "../tasks.js";
 import type * as transportation from "../transportation.js";
 
@@ -25,6 +26,7 @@ import type * as transportation from "../transportation.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  airplane_time: typeof airplane_time;
   tasks: typeof tasks;
   transportation: typeof transportation;
 }>;
