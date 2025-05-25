@@ -1,4 +1,5 @@
 "use client"
+
 import React, { useRef, useState } from 'react'
 import TextField from "@mui/material/TextField"
 import DatePicker from "react-datepicker";
@@ -9,19 +10,21 @@ import Link from 'next/link';
 import SwapHorizOutlined from "@mui/icons-material/SwapHorizOutlined"
 import { Button } from '../ui/button';
 import ReCAPTCHA from "react-google-recaptcha";
-import { useQuery } from 'convex/react';
+import { Preloaded, usePreloadedQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
-import { Id } from '../../../convex/_generated/dataModel';
 import { Skeleton } from "@/components/ui/skeleton"
 import Image from 'next/image';
+import { TransportationType } from "@/components/PrivateTransportationServiceSection";
 
-const BookTransportationMainPage = ({ _id }: { _id: string }) => {
+const BookTransportationMainPage = ({
+    preloadedTransportation,
+}: {
+    preloadedTransportation: Preloaded<typeof api.transportation.select>
+}) => {
+
+    const transportation: TransportationType = usePreloadedQuery(preloadedTransportation)
+
     const today = new Date();
-
-    const transportationId = _id as Id<"transportations">;
-
-    const transportation = useQuery(api.transportation.select, { id: transportationId })
-
     // Departure time related state and handlers
     const [selectedTime, setSelectedTime] = useState<Date | null>(today);
     const [isOpen, setIsOpen] = useState(false);

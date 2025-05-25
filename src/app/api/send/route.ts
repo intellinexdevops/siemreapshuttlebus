@@ -3,6 +3,7 @@ import EmailTemplate from "@/emails/booking-ticket/booking-ticket-v1";
 import moment from "moment";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
+// import PapermarkYearInReviewEmail from "@/emails/booking-ticket/test";
 
 const resend = new Resend(process.env.NEXT_PUBLIC_RESEND_API_KEY);
 
@@ -23,13 +24,12 @@ export async function POST(request: Request) {
 
     const total = Number(passager) * Number(price);
 
-    const bookingId = `SR-${Date.now().toString().slice(-6)}`;
 
     const { data, error } = await resend.emails.send({
-      from: "no-reply <support@mail.siemreapshuttlebus.com>",
+      from: "no-reply <support@twelvemadeit.com>",
       to: [requestData.to],
-      subject: `Siem Reap Shuttle Bus Booking Confirmation #${bookingId}`,
-      react: await EmailTemplate({
+      subject: `Siem Reap Shuttle Bus Booking Confirmation #${requestData.orderRef}`,
+      react: EmailTemplate({
         name: requestData.name || "John",
         email: requestData.to,
         issuedDate: moment(today).format("MMM DD, YYYY HH:mm:ss"),
@@ -38,9 +38,10 @@ export async function POST(request: Request) {
         price: requestData.price,
         ticketType: requestData.ticketType,
         total: total.toString(),
-        orderRef: bookingId,
+        orderRef: requestData.orderRef,
+        detailUrl: requestData.detailUrl,
       }),
-      cc: ["khonkhen@siemreapshuttlebus.com"],
+      cc: ["support@twelvemadeit.com"],
     });
 
     if (error) {

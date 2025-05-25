@@ -4,30 +4,58 @@ import TextField from "@mui/material/TextField"
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import moment from 'moment';
-import { FormControl, IconButton, InputAdornment, InputLabel, MenuItem, OutlinedInput, Select, SelectChangeEvent } from '@mui/material';
+import {
+    CircularProgress,
+    FormControl,
+    IconButton,
+    InputAdornment,
+    InputLabel,
+    MenuItem,
+    OutlinedInput,
+    Select,
+    SelectChangeEvent
+} from '@mui/material';
 import Image from 'next/image';
 import { Button } from './ui/button';
 import Link from 'next/link';
 import SwapHorizOutlined from "@mui/icons-material/SwapHorizOutlined"
 
-const TicketBookingSection = () => {
+interface Departure {
+    _creationTime: number;
+    _id: string;
+    from_town: boolean;
+    time: string;
+}
+
+const TicketBookingSection = ({
+    departureFrom,
+    departureTo
+}:{
+    departureFrom: Departure[],
+    departureTo: Departure[],
+}) => {
     const today = new Date();
+    const [direction, setDirection] = useState("from");
 
     // Departure time related state and handlers
-    const [selectedTime, setSelectedTime] = useState<Date | null>(today);
-    const [isOpen, setIsOpen] = useState(false);
-    const timePickerRef = useRef(null);
+    const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
-    const handleTimeFocus = () => {
-        setIsOpen(true);
-    };
+    React.useEffect(() => {
+        if (selectedTime === null) { // only set if nothing selected yet
+            if (direction === "from" && departureFrom?.length) {
+                setSelectedTime(departureFrom[0].time);
+            } else if (direction === "to" && departureTo?.length) {
+                setSelectedTime(departureTo[0].time);
+            }
+        }
+    }, [direction, departureFrom, departureTo, selectedTime]);
 
-    const handleTimeChange = (date: Date | null) => {
+    const handleTimeChange = (date: string | null) => {
         setSelectedTime(date);
-        setIsOpen(false);
+        // setIsOpen(false);
     };
 
-    // Return time related state and handlers
+    // Return time-related state and handlers
     const [returnTime, setReturnTime] = useState<Date | null>(today);
     const [isReturnTimeOpen, setIsReturnTimeOpen] = useState(false);
     const returnTimePickerRef = useRef(null);
@@ -54,7 +82,7 @@ const TicketBookingSection = () => {
         setSelectedDate(date);
         setIsDateOpen(false);
 
-        // If return date is earlier than the new departure date, update it
+        // If the return date is earlier than the new departure date, update it
         if (returnDate && date && returnDate < date) {
             setReturnDate(date);
         }
@@ -75,10 +103,10 @@ const TicketBookingSection = () => {
     };
 
     // Passenger selection state
-    const [passager, setPassager] = useState('1');
+    const [passager, setPassanger] = useState('1');
 
     const handleChange = (event: SelectChangeEvent) => {
-        setPassager(event.target.value as string);
+        setPassanger(event.target.value as string);
     };
 
     // Trip type selection state
@@ -86,23 +114,8 @@ const TicketBookingSection = () => {
 
     const handleChangeTrip = (event: SelectChangeEvent) => {
         setTrip(event.target.value as string);
-
-        // When switching to round trip, initialize return date and time if needed
-        if (event.target.value === '2' && selectedDate) {
-            // Set return date to at least the departure date
-            const nextDay = new Date(selectedDate);
-            nextDay.setDate(nextDay.getDate() + 1);
-            setReturnDate(nextDay);
-
-            // Set a reasonable default return time (same time as departure)
-            if (selectedTime) {
-                const defaultReturnTime = new Date(selectedTime);
-                setReturnTime(defaultReturnTime);
-            }
-        }
     };
 
-    const [direction, setDirection] = useState("from");
     const airport = "SR Int. Airport";
     const siemreap = "Siem Reap Town";
     const [displayDirection, setDisplayDirection] = useState<string>(`${airport} - ${siemreap}`)
@@ -142,8 +155,9 @@ const TicketBookingSection = () => {
                                                 aria-label='swap'
                                                 edge="end"
                                                 onClick={handleOnSwapChange}
-                                            />
-                                            <SwapHorizOutlined />
+                                            >
+                                                <SwapHorizOutlined />
+                                            </IconButton>
                                         </InputAdornment>
                                     }
                                 />
@@ -151,32 +165,57 @@ const TicketBookingSection = () => {
                         </div>
 
                         <div className='relative lg:col-span-1 col-span-2'>
-                            <TextField
-                                required
-                                label="Departure Time"
-                                className='w-full'
-                                id="departure-time-field"
-                                value={selectedTime ? moment(selectedTime).format("hh:mm A") : ""}
-                                onFocus={handleTimeFocus}
-                                InputProps={{ readOnly: true }}
-                            />
-                            {isOpen && (
-                                <div className="absolute top-8 z-10 right-1/2">
-                                    <DatePicker
-                                        selected={selectedTime}
-                                        onChange={(date) => handleTimeChange(date)}
-                                        showTimeSelect
-                                        showTimeSelectOnly
-                                        timeIntervals={15}
-                                        timeCaption="Time"
-                                        dateFormat="hh:mm a"
-                                        open={true}
-                                        onClickOutside={() => setIsOpen(false)}
-                                        ref={timePickerRef}
-                                        className='hidden'
-                                    />
-                                </div>
-                            )}
+                            <FormControl fullWidth>
+                                {departureFrom && departureTo ? (
+                                    <>
+                                        <InputLabel id="departure-time-select-label">Departure Time</InputLabel>
+                                        <Select
+                                            labelId="departure-time-select-label"
+                                            id="departure-time-select"
+                                            value={selectedTime ?? ""}
+                                            label="Departure Time"
+                                            onChange={(e) => handleTimeChange(e.target.value)}
+                                        >
+                                            {(direction === 'from') && (
+                                                departureFrom ? (
+                                                    departureFrom.map((item, index) => (
+                                                        <MenuItem key={index} value={item.time}>
+                                                            {item.time}
+                                                        </MenuItem>
+                                                    ))) : (<div className='flex justify-center items-center py-4'>
+                                                        <CircularProgress size={20} />
+                                                    </div>
+                                                )
+                                            )}
+
+                                            {(direction === 'to') && (
+                                                departureTo ? (
+                                                    departureTo.map((item, index) => (
+                                                        <MenuItem key={index} value={item.time}>
+                                                            {item.time}
+                                                        </MenuItem>
+                                                    ))) : (<div className='flex justify-center items-center py-4'>
+                                                        <CircularProgress size={20} />
+                                                    </div>
+                                                )
+                                            )}
+                                        </Select>
+                                    </>
+                                ) : (
+                                    <>
+                                        <TextField
+                                            id="departure-time-select"
+                                            disabled
+                                            label="Departure Time"
+                                            onChange={(e) => handleTimeChange(e.target.value)}
+                                            value={moment(today).format("HH:mm A")}
+                                        />
+                                        <CircularProgress className='absolute top-4 right-4' size={20} />
+
+                                    </>
+                                )}
+                            </FormControl>
+
                         </div>
                         <div className='relative lg:col-span-1 col-span-2'>
                             <TextField
@@ -216,7 +255,7 @@ const TicketBookingSection = () => {
                                         onChange={handleChange}
                                     >
                                         <MenuItem value={'1'}>1 passager</MenuItem>
-                                        <MenuItem value={'2'}>2 passagers</MenuItem>
+                                        <MenuItem value={'2'}>2 passengers</MenuItem>
                                         <MenuItem value={'3'}>3 passagers</MenuItem>
                                     </Select>
                                 </FormControl>

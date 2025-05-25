@@ -1,10 +1,23 @@
+"use client"
+
 import React from 'react'
 import Modal from '../ui/modal'
 import { ArrowRightAltOutlined } from "@mui/icons-material"
 import { Button } from '../ui/button'
+import { Preloaded, usePreloadedQuery } from 'convex/react';
+import { api } from "../../../convex/_generated/api";
+import { Transaction } from '@/types/transaction'
 
-const BookingDetailPage = ({ slug }: { slug: string }) => {
-    console.log(slug)
+const BookingDetailPage = ({
+    transactionPreloaded
+}: {
+    transactionPreloaded: Preloaded<typeof api.transactions.select>
+}) => {
+
+    const transaction: Transaction = usePreloadedQuery(transactionPreloaded)
+
+    console.log("transactionPreloaded", transactionPreloaded._argsJSON)
+
     return (
         <div className='h-screen'>
             <Modal>
@@ -16,7 +29,7 @@ const BookingDetailPage = ({ slug }: { slug: string }) => {
                         <div className='grid md:grid-cols-1 lg:grid-cols-2 grid-cols-2 max-[500px]:grid-cols-1 gap-x-4 gap-y-6 mt-4'>
                             <div className=''>
                                 <p className='text-xs text-neutral-500'>Order Ref</p>
-                                <p className='text-sm font-medium text-neutral-700'>SR-123456</p>
+                                <p className='text-sm font-medium text-neutral-700'>{transaction.order_ref}</p>
                             </div>
                             <div className=''>
                                 <p className='text-xs text-neutral-500'>Departure Date</p>

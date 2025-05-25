@@ -1,11 +1,11 @@
 export interface Transaction {
   _id: string;
   order_ref: string;
+  departure_date: string;
   email: string;
   name: string;
   passager: number;
   phone: string;
-  price: number;
   ticket_type: string;
   total: number;
   issued_date: string;
@@ -15,3 +15,7 @@ export interface Transaction {
   return_date?: string;
   trip: string;
 }
+
+export type TransactionList = Transaction[];
+
+export type TransactionInsert = Omit<Transaction, '_id'>;

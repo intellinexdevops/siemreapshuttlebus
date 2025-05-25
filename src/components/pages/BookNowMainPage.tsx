@@ -10,7 +10,7 @@ import { Button } from '../ui/button';
 import ReCAPTCHA from "react-google-recaptcha";
 import axios from 'axios';
 import Loading from '@/app/loading';
-import { useQuery } from 'convex/react';
+import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import {
     Dialog,
@@ -23,34 +23,37 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 
-type CustomerInfoType = Partial<{
+type CustomerInfoType = {
     firstName: string;
     lastName: string;
     email: string;
     phoneNumber: string;
     paymentInfo: string;
-    specialRequest: string;
-}>
+    specialRequest: string | undefined;
+}
 
 const BookNowMainPage = () => {
     const today = new Date();
+
+    const mutateTransaction = useMutation(api.transactions.create)
 
     const departureFrom = useQuery(api.airplane_time.getFrom);
     const departureTo = useQuery(api.airplane_time.getTo);
 
     const [direction, setDirection] = useState("from");
+    const [tranId, setTranId] = useState<string | null>(null);
 
     // Departure time related state and handlers
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
     React.useEffect(() => {
-        // if (selectedTime === null) { // only set if nothing selected yet
-        if (direction === "from" && departureFrom?.length) {
-            setSelectedTime(departureFrom[0].time);
-        } else if (direction === "to" && departureTo?.length) {
-            setSelectedTime(departureTo[0].time);
+        if (selectedTime === null) { // only set if nothing selected yet
+            if (direction === "from" && departureFrom?.length) {
+                setSelectedTime(departureFrom[0].time);
+            } else if (direction === "to" && departureTo?.length) {
+                setSelectedTime(departureTo[0].time);
+            }
         }
-        // }
     }, [direction, departureFrom, departureTo, selectedTime]);
 
     const handleTimeChange = (date: string | null) => {
@@ -58,7 +61,7 @@ const BookNowMainPage = () => {
         // setIsOpen(false);
     };
 
-    // Return time related state and handlers
+    // Return time-related state and handlers
     const [returnTime, setReturnTime] = useState<Date | null>(today);
     const [isReturnTimeOpen, setIsReturnTimeOpen] = useState(false);
     const returnTimePickerRef = useRef(null);
@@ -85,7 +88,7 @@ const BookNowMainPage = () => {
         setSelectedDate(date);
         setIsDateOpen(false);
 
-        // If return date is earlier than the new departure date, update it
+        // If the return date is earlier than the new departure date, update it
         if (returnDate && date && returnDate < date) {
             setReturnDate(date);
         }
@@ -120,14 +123,14 @@ const BookNowMainPage = () => {
     }
 
     // Trip type selection state
-    const [trip, setTrip] = useState('1');
+    const [trip, setTrip] = useState('One Way');
 
     const handleChangeTrip = (event: SelectChangeEvent) => {
         setTrip(event.target.value as string);
 
-        // When switching to round trip, initialize return date and time if needed
+        // When switching to the round trip, initialize the return date and time if needed
         if (event.target.value === '2' && selectedDate) {
-            // Set return date to at least the departure date
+            // Set the return date to at least the departure date
             const nextDay = new Date(selectedDate);
             nextDay.setDate(nextDay.getDate() + 1);
             setReturnDate(nextDay);
@@ -187,22 +190,50 @@ const BookNowMainPage = () => {
     const handleBookNow = async () => {
         setIsLoading(true);
         try {
-            const data = {
-                to: customerInfo?.email,
+
+            const orderRef = `SR-${Date.now().toString().slice(-6)}`;
+            const departureDate = selectedDate ? `${moment(selectedDate).format("DD MMM YYYY [/] HH:mm A")}` : "";
+            const issuedDate = moment(today).format("YYYY-MM-DD");
+            const returnDateData = returnDate ? moment(returnDate).format("YYYY-MM-DD") : "";
+
+            mutateTransaction({
+                order_ref: orderRef,
+                departure_date: departureDate,
+                email: customerInfo?.email as string,
                 name: `${customerInfo?.firstName} ${customerInfo?.lastName}`,
-                ticketType: "Airplane Ticket",
-                phone: customerInfo?.phoneNumber,
                 passager: Number(passager),
-                price: "35",
-                email: customerInfo?.email
-            }
+                phone: customerInfo?.phoneNumber as string,
+                ticket_type: "Airplane Ticket",
+                total: Number(passager) * 35,
+                issued_date: issuedDate,
+                special_request: customerInfo?.specialRequest ?? "",
+                payment_method: payment,
+                return_date: returnDateData,
+                trip: trip,
+            }).then(async (res) => {
+                setTranId(res)
+                const data = {
+                    to: customerInfo?.email,
+                    name: `${customerInfo?.firstName} ${customerInfo?.lastName}`,
+                    ticketType: "Airplane Ticket",
+                    phone: customerInfo?.phoneNumber,
+                    passager: Number(passager),
+                    price: "35",
+                    email: customerInfo?.email,
+                    detailUrl: res
+                }
 
-            const response = await axios.post('/api/send', data)
+                const response = await axios.post('/api/send', data)
 
-            if (response.data.status.code === 0) {
-                setCustomerInfo(null)
-                setIsSuccess(true)
-            }
+                if (response.data.status.code === 0) {
+                    setCustomerInfo(null)
+                    setIsSuccess(true)
+                }
+            }).catch((err) => {
+                console.log(err);
+                return;
+            })
+
         } catch (e) {
             console.log(e)
         } finally {
@@ -355,8 +386,8 @@ const BookNowMainPage = () => {
                                         label="Trip"
                                         onChange={handleChangeTrip}
                                     >
-                                        <MenuItem value={'1'}>One Way</MenuItem>
-                                        <MenuItem value={'2'}>Round trip</MenuItem>
+                                        <MenuItem value={'One Way'}>One Way</MenuItem>
+                                        <MenuItem value={'Round trip'}>Round trip</MenuItem>
                                     </Select>
                                 </FormControl>
                             </div>
@@ -436,7 +467,20 @@ const BookNowMainPage = () => {
                             type='text'
                             id='firstname'
                             value={customerInfo?.firstName ?? ""}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustomerInfo({ ...customerInfo, firstName: e.target.value })}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                if (customerInfo) {
+                                    setCustomerInfo({ ...customerInfo, firstName: e.target.value });
+                                } else {
+                                    setCustomerInfo({
+                                        firstName: e.target.value,
+                                        lastName: '',
+                                        email: '',
+                                        phoneNumber: '',
+                                        paymentInfo: '',
+                                        specialRequest: ''
+                                    });
+                                }
+                            }}
                         />
                         <TextField
                             required
@@ -444,21 +488,60 @@ const BookNowMainPage = () => {
                             type='text'
                             id='lastname'
                             value={customerInfo?.lastName ?? ""}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustomerInfo({ ...customerInfo, lastName: e.target.value })}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                if (customerInfo) {
+                                    setCustomerInfo({ ...customerInfo, lastName: e.target.value });
+                                } else {
+                                    setCustomerInfo({
+                                        firstName: '',
+                                        lastName: e.target.value,
+                                        email: '',
+                                        phoneNumber: '',
+                                        paymentInfo: '',
+                                        specialRequest: ''
+                                    });
+                                }
+                            }}
                         />
                         <TextField
                             required
                             label="Email"
                             type='email'
                             value={customerInfo?.email ?? ""}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustomerInfo({ ...customerInfo, email: e.target.value })}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                if (customerInfo) {
+                                    setCustomerInfo({ ...customerInfo, email: e.target.value });
+                                } else {
+                                    setCustomerInfo({
+                                        firstName: '',
+                                        lastName: '',
+                                        email: e.target.value,
+                                        phoneNumber: '',
+                                        paymentInfo: '',
+                                        specialRequest: ''
+                                    });
+                                }
+                            }}
                         />
                         <TextField
                             required
                             label="Phone Number"
                             type='text'
                             value={customerInfo?.phoneNumber ?? ""}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustomerInfo({ ...customerInfo, phoneNumber: e.target.value })}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                if (customerInfo) {
+                                    setCustomerInfo({ ...customerInfo, phoneNumber: e.target.value });
+                                } else {
+                                    setCustomerInfo({
+                                        firstName: '',
+                                        lastName: '',
+                                        email: '',
+                                        phoneNumber: e.target.value,
+                                        paymentInfo: '',
+                                        specialRequest: ''
+                                    });
+                                }
+                            }}
                         />
                         <FormControl fullWidth>
                             <InputLabel id="payment-select-label">Payment Method</InputLabel>
@@ -484,7 +567,20 @@ const BookNowMainPage = () => {
                                 placeholder='Ex: I need a bottle of water'
                                 maxRows={4}
                                 value={customerInfo?.specialRequest ?? ""}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustomerInfo({ ...customerInfo, specialRequest: e.target.value })}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                    if (customerInfo) {
+                                        setCustomerInfo({ ...customerInfo, specialRequest: e.target.value });
+                                    } else {
+                                        setCustomerInfo({
+                                            firstName: '',
+                                            lastName: '',
+                                            email: '',
+                                            phoneNumber: '',
+                                            paymentInfo: '',
+                                            specialRequest: e.target.value
+                                        });
+                                    }
+                                }}
                             />
                         </div>
                     </div>
@@ -526,7 +622,7 @@ const BookNowMainPage = () => {
                             Check your email for detail and bring <br /> confirmation number upon arrival.
                         </p>
                         <div className='mt-6 flex items-center gap-x-4'>
-                            <Link href='/booking-detail'>
+                            <Link href={`/booking-detail/${tranId}`} passHref>
                                 <Button className='h-10 px-5 rounded cursor-pointer bg-neutral-100 text-neutral-500 hover:bg-neutral-200' onClick={() => setCustomerInfo(null)}>
                                     View Detail
                                 </Button>

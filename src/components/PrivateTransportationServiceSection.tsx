@@ -1,15 +1,25 @@
 "use client"
-import { useQuery } from 'convex/react'
 import React from 'react'
-import { api } from '../../convex/_generated/api'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Skeleton } from '@mui/material'
 
-const PrivateTransportationServiceSection = () => {
-    const transportations = useQuery(api.transportation.get)
+export interface TransportationType {
+    _creationTime: number;
+    _id: string;
+    price: string;
+    status: number;
+    storageId: string;
+    title: string;
+    unit: string;
+    url: string;
+}
 
-    // console.table(transportations)
+const PrivateTransportationServiceSection = ({
+transportations
+}:{
+    transportations: TransportationType[]
+}) => {
     return (
         <section className='mt-[62px] container mx-auto mb-[100px]' id='#transport'>
             <div>
