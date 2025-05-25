@@ -4,9 +4,11 @@ import HeaderComponent from "@/components/HeaderComponent";
 import React, { Fragment } from "react";
 
 export default function FrontEndLayout({
-    children
+    children,
+    modal
 }: {
-    children: React.ReactNode
+    children: React.ReactNode;
+    modal: React.ReactNode;
 }) {
     return (
         // <MapProvider>
@@ -17,6 +19,7 @@ export default function FrontEndLayout({
         <Fragment>
             <HeaderComponent />
             {children}
+            {modal}
             <FooterComponent />
         </Fragment>
     )
