@@ -7,6 +7,7 @@ import { Button } from '../ui/button'
 import { Preloaded, usePreloadedQuery } from 'convex/react';
 import { api } from "../../../convex/_generated/api";
 import { Transaction } from '@/types/transaction'
+import { useRouter } from 'next/navigation'
 
 const BookingDetailPage = ({
     transactionPreloaded
@@ -14,9 +15,13 @@ const BookingDetailPage = ({
     transactionPreloaded: Preloaded<typeof api.transactions.select>
 }) => {
 
-    const transaction: Transaction = usePreloadedQuery(transactionPreloaded)
+    const transaction: Transaction = usePreloadedQuery(transactionPreloaded);
 
-    console.log("transactionPreloaded", transactionPreloaded._argsJSON)
+    const router = useRouter()
+
+    const handleClose = () => {
+        router.back();
+    }
 
     return (
         <div className='h-screen'>
@@ -33,24 +38,30 @@ const BookingDetailPage = ({
                             </div>
                             <div className=''>
                                 <p className='text-xs text-neutral-500'>Departure Date</p>
-                                <p className='text-sm font-medium text-neutral-700'>Sep 12, 2023 / 09:30 AM</p>
+                                <p className='text-sm font-medium text-neutral-700'>{transaction.departure_date}</p>
                             </div>
                             <div>
                                 <p className='text-xs text-neutral-500'>Status</p>
-                                <p className='text-sm font-medium text-neutral-700'>SAI <ArrowRightAltOutlined fontSize='small' color='action' />  Siem Reap Town</p>
+                                <p className='text-sm font-medium text-neutral-700'>{transaction.from} <ArrowRightAltOutlined fontSize='small' color='action' />  {transaction.to}</p>
                             </div>
                             <div>
                                 <p className='text-xs text-neutral-500'>Passager</p>
-                                <p className='text-sm font-medium text-neutral-700'>1 passager</p>
+                                <p className='text-sm font-medium text-neutral-700'>{transaction.passager} passager</p>
                             </div>
                             <div>
                                 <p className='text-xs text-neutral-500'>Trip</p>
-                                <p className='text-sm font-medium text-neutral-700'>One Way</p>
+                                <p className='text-sm font-medium text-neutral-700'>{transaction.trip}</p>
                             </div>
                             <div>
                                 <p className='text-xs text-neutral-500'>Payment Method</p>
-                                <p className='text-sm font-medium text-neutral-700'>Cash</p>
+                                <p className='text-sm font-medium text-neutral-700'>{transaction.payment_method}</p>
                             </div>
+                            {transaction.return_date !== "" && (
+                                <div>
+                                    <p className='text-xs text-neutral-500'>Return Date</p>
+                                    <p className='text-sm font-medium text-neutral-700'>{transaction.return_date}</p>
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -59,19 +70,19 @@ const BookingDetailPage = ({
                         <div className='grid md:grid-cols-1 lg:grid-cols-2 max-[500px]:grid-cols-1 grid-cols-2 gap-x-4 gap-y-6 mt-4'>
                             <div className=''>
                                 <p className='text-xs text-neutral-500'>Full Name</p>
-                                <p className='text-sm font-medium text-neutral-700'>Chenter PHAI</p>
+                                <p className='text-sm font-medium text-neutral-700'>{transaction.name}</p>
                             </div>
                             <div>
                                 <p className='text-xs text-neutral-500'>Phone</p>
-                                <p className='text-sm font-medium text-neutral-700'>0964903404</p>
+                                <p className='text-sm font-medium text-neutral-700'>{transaction.phone}</p>
                             </div>
                             <div className=''>
                                 <p className='text-xs text-neutral-500'>Email</p>
-                                <p className='text-sm font-medium text-neutral-700'>chenterphai61@gmail.com</p>
+                                <p className='text-sm font-medium text-neutral-700'>{transaction.email}</p>
                             </div>
                             <div>
                                 <p className='text-xs text-neutral-500'>Special Request</p>
-                                <p className='text-sm font-medium text-neutral-700'>A bottle of water</p>
+                                <p className='text-sm font-medium text-neutral-700'>{transaction.special_request ?? "-"}</p>
                             </div>
                         </div>
                     </div>
@@ -79,13 +90,13 @@ const BookingDetailPage = ({
                 <div className='bg-neutral-50 shadow p-4 rounded-lg flex items-center justify-between mt-4'>
                     <div>
                         <p className='text-sm font-medium text-neutral-600'>Total Amount</p>
-                        <p className='text-xl font-semibold text-primary'>$10.00</p>
+                        <p className='text-lg font-semibold text-primary'>${parseFloat(`${transaction.total}`).toFixed(2)}</p>
                     </div>
                     <div className='flex items-center gap-x-2'>
                         <Button variant="outline" className='text-neutral-600 text-sm cursor-pointer px-8'>
                             Print
                         </Button>
-                        <Button className='text-sm cursor-pointer px-8'>
+                        <Button className='text-sm cursor-pointer px-8' onClick={handleClose}>
                             Done
                         </Button>
                     </div>

@@ -6,14 +6,14 @@ import { api } from "../../../../../../convex/_generated/api";
 
 interface BookingDetailPageProps {
     params: Promise<{
-        id: string
+        slug: string
     }>
 }
 
 export default async function Page({ params }: BookingDetailPageProps) {
-    const { id } = await params
+    const { slug } = await params
 
-    const transactionId = id as Id<"transactions">;
+    const transactionId = slug as Id<"transactions">;
 
     const preloadedTransaction = await preloadQuery(api.transactions.select, { id: transactionId })
 

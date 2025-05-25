@@ -116,7 +116,7 @@ const BookNowMainPage = () => {
     };
 
     // Payment Method
-    const [payment, setPayment] = useState('cash')
+    const [payment, setPayment] = useState('Cash')
 
     const handleChangePayment = (event: SelectChangeEvent) => {
         setPayment(event.target.value as string)
@@ -137,17 +137,20 @@ const BookNowMainPage = () => {
         }
     };
 
-    const airport = "SR Int. Airport";
+    const airport = {
+        name: "SR. Int. Airport",
+        value: "SAI"
+    };
     const siemreap = "Siem Reap Town";
-    const [displayDirection, setDisplayDirection] = useState<string>(`${airport} - ${siemreap}`)
+    const [displayDirection, setDisplayDirection] = useState<string>(`${airport.name} - ${siemreap}`)
 
     const handleOnSwapChange = () => {
         if (direction === "from") {
             setDirection("to")
-            setDisplayDirection(`${siemreap} - ${airport}`)
+            setDisplayDirection(`${siemreap} - ${airport.name}`)
         } else {
             setDirection("from")
-            setDisplayDirection(`${airport} - ${siemreap}`)
+            setDisplayDirection(`${airport.name} - ${siemreap}`)
         }
     }
 
@@ -192,11 +195,11 @@ const BookNowMainPage = () => {
         try {
 
             const orderRef = `SR-${Date.now().toString().slice(-6)}`;
-            const departureDate = selectedDate ? `${moment(selectedDate).format("DD MMM YYYY [/] HH:mm A")}` : "";
-            const issuedDate = moment(today).format("YYYY-MM-DD");
-            const returnDateData = returnDate ? moment(returnDate).format("YYYY-MM-DD") : "";
+            const departureDate = selectedDate ? `${moment(selectedDate).format("DD MMM YYYY")} / ${selectedTime}` : "";
+            const issuedDate = moment(today).format("MMM DD, YYYY");
+            const returnDateData = returnDate && trip === "Round trip" ? `${moment(returnDate).format("MMM DD, YYYY")} / ${moment(returnTime).format("HH:mm A")}` : "";
 
-            mutateTransaction({
+            await mutateTransaction({
                 order_ref: orderRef,
                 departure_date: departureDate,
                 email: customerInfo?.email as string,
@@ -210,8 +213,11 @@ const BookNowMainPage = () => {
                 payment_method: payment,
                 return_date: returnDateData,
                 trip: trip,
+                from: direction === "from" ? airport.value : siemreap,
+                to: direction === "from" ? siemreap : airport.value
             }).then(async (res) => {
                 setTranId(res)
+                // Send email with booking details
                 const data = {
                     to: customerInfo?.email,
                     name: `${customerInfo?.firstName} ${customerInfo?.lastName}`,
@@ -220,7 +226,8 @@ const BookNowMainPage = () => {
                     passager: Number(passager),
                     price: "35",
                     email: customerInfo?.email,
-                    detailUrl: res
+                    detailUrl: res,
+                    orderRef: orderRef,
                 }
 
                 const response = await axios.post('/api/send', data)
@@ -231,7 +238,6 @@ const BookNowMainPage = () => {
                 }
             }).catch((err) => {
                 console.log(err);
-                return;
             })
 
         } catch (e) {
@@ -393,7 +399,7 @@ const BookNowMainPage = () => {
                             </div>
 
                         </div>
-                        {trip === "2" && (
+                        {trip === "Round trip" && (
                             <>
                                 <div className='relative col-span-2'>
                                     <TextField
@@ -552,9 +558,9 @@ const BookNowMainPage = () => {
                                 label="Payment Method"
                                 onChange={handleChangePayment}
                             >
-                                <MenuItem value={'cash'}>Cash</MenuItem>
-                                <MenuItem value={'khqr'}>KHQR</MenuItem>
-                                <MenuItem value={'abapay'}>Credit Card</MenuItem>
+                                <MenuItem value={'Cash'}>Cash (To be paid on spot)</MenuItem>
+                                <MenuItem value={'ABA QR'}>ABA QR Code Payment</MenuItem>
+                                <MenuItem value={'Credit Card'}>Credit Card (Accept at bus station)</MenuItem>
                             </Select>
                         </FormControl>
                         <div className='col-span-2'>

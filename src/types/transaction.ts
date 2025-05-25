@@ -14,8 +14,10 @@ export interface Transaction {
   payment_method: string;
   return_date?: string;
   trip: string;
+  from?: string;
+  to?: string;
 }
 
 export type TransactionList = Transaction[];
 
-export type TransactionInsert = Omit<Transaction, '_id'>;
+export type TransactionInsert = Omit<Transaction, "_id">;
