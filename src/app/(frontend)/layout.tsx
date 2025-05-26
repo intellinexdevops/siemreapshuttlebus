@@ -18,7 +18,9 @@ export default function FrontEndLayout({
         // </MapProvider>
         <Fragment>
             <HeaderComponent />
-            {children}
+            <main className="px-4 md:px-0">
+                {children}
+            </main>
             {modal}
             <FooterComponent />
         </Fragment>
