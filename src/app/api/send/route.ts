@@ -24,9 +24,8 @@ export async function POST(request: Request) {
 
     const total = Number(passager) * Number(price);
 
-
     const { data, error } = await resend.emails.send({
-      from: "no-reply <support@twelvemadeit.com>",
+      from: process.env.NEXT_PUBLIC_EMAIL_FROM as string,
       to: [requestData.to],
       subject: `Siem Reap Shuttle Bus Booking Confirmation #${requestData.orderRef}`,
       react: EmailTemplate({

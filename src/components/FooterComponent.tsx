@@ -12,8 +12,8 @@ const FooterComponent = () => {
     return (
         <footer className='bg-primary'>
             <div className="container mx-auto py-10">
-                <div className='flex items-center justify-between border-t border-neutral-200'>
-                    <div className='text-xs text-neutral-100 mt-2'>&copy; Copyright {year}</div>
+                <div className='flex flex-col gap-y-6 md:flex-row items-center justify-between border-t border-neutral-200'>
+                    <div className='text-xs text-neutral-100 md:mt-2 mt-6'>&copy; Copyright {year}</div>
                     <div className='flex items-center gap-5'>
                         <Link href="#" className='text-xs text-neutral-100 hover:underline'>
                             Terms & Conditions

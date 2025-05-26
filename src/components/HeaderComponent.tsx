@@ -8,7 +8,7 @@ const HeaderComponent = () => {
 
 
     return (
-        <header className='bg-white fixed top-0 w-screen z-50'>
+        <header className='bg-white fixed left-0 right-0 top-0 z-50'>
             <div className='container mx-auto grid grid-cols-3 items-center h-[92px] md:px-0 px-6'>
                 <Link href="/" className='flex items-center gap-2'>
                     <Image

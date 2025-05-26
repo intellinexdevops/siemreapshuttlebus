@@ -382,7 +382,7 @@ const BookTransportationMainPage = ({
                             {/* <div className='h-[3px] bg-primary' /> */}
                         </div>
                     </div>
-                    <div className='grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-8 mt-4'>
+                    <div className='grid grid-cols-2 gap-x-4 gap-y-8 mt-4'>
                         <TextField
                             required
                             label="First name"
@@ -399,13 +399,15 @@ const BookTransportationMainPage = ({
                             required
                             label="Email"
                             type='email'
+                            className='col-span-2 md:col-span-1'
                         />
                         <TextField
                             required
                             label="Phone Number"
                             type='text'
+                            className='col-span-2 md:col-span-1'
                         />
-                        <FormControl fullWidth>
+                        <FormControl fullWidth className='col-span-2 md:col-span-1'>
                             <InputLabel id="payment-select-label">Payment Method</InputLabel>
                             <Select
                                 labelId="payment-select-label"

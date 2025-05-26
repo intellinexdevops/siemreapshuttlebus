@@ -10,7 +10,7 @@ import { Button } from '../ui/button';
 import ReCAPTCHA from "react-google-recaptcha";
 import axios from 'axios';
 import Loading from '@/app/loading';
-import { useMutation, useQuery } from 'convex/react';
+import { Preloaded, useMutation, usePreloadedQuery, useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import {
     Dialog,
@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog"
 import Image from 'next/image';
 import Link from 'next/link';
+import { Payment } from '@/types/payments';
 
 type CustomerInfoType = {
     firstName: string;
@@ -32,8 +33,14 @@ type CustomerInfoType = {
     specialRequest: string | undefined;
 }
 
-const BookNowMainPage = () => {
+const BookNowMainPage = ({
+    preloadedPayments
+}: {
+    preloadedPayments: Preloaded<typeof api.payments.get>
+}) => {
     const today = new Date();
+
+    const payments: Payment[] = usePreloadedQuery(preloadedPayments);
 
     const mutateTransaction = useMutation(api.transactions.create)
 
@@ -116,7 +123,7 @@ const BookNowMainPage = () => {
     };
 
     // Payment Method
-    const [payment, setPayment] = useState('Cash')
+    const [payment, setPayment] = useState(payments && payments.length > 0 ? payments[0].value : '');
 
     const handleChangePayment = (event: SelectChangeEvent) => {
         setPayment(event.target.value as string)
@@ -466,7 +473,7 @@ const BookNowMainPage = () => {
                             {/* <div className='h-[3px] bg-primary' /> */}
                         </div>
                     </div>
-                    <div className='grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-8 mt-4'>
+                    <div className='grid grid-cols-2 gap-x-4 gap-y-8 mt-4'>
                         <TextField
                             required
                             label="First name"
@@ -488,6 +495,8 @@ const BookNowMainPage = () => {
                                 }
                             }}
                         />
+
+
                         <TextField
                             required
                             label="Last name"
@@ -509,10 +518,12 @@ const BookNowMainPage = () => {
                                 }
                             }}
                         />
+
                         <TextField
                             required
                             label="Email"
                             type='email'
+                            className='md:col-span-1 col-span-2'
                             value={customerInfo?.email ?? ""}
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                 if (customerInfo) {
@@ -533,6 +544,7 @@ const BookNowMainPage = () => {
                             required
                             label="Phone Number"
                             type='text'
+                            className='md:col-span-1 col-span-2'
                             value={customerInfo?.phoneNumber ?? ""}
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                 if (customerInfo) {
@@ -549,7 +561,7 @@ const BookNowMainPage = () => {
                                 }
                             }}
                         />
-                        <FormControl fullWidth>
+                        <FormControl fullWidth className='md:col-span-1 col-span-2'>
                             <InputLabel id="payment-select-label">Payment Method</InputLabel>
                             <Select
                                 labelId="payment-select-label"
@@ -558,9 +570,11 @@ const BookNowMainPage = () => {
                                 label="Payment Method"
                                 onChange={handleChangePayment}
                             >
-                                <MenuItem value={'Cash'}>Cash (To be paid on spot)</MenuItem>
-                                <MenuItem value={'ABA QR'}>ABA QR Code Payment</MenuItem>
-                                <MenuItem value={'Credit Card'}>Credit Card (Accept at bus station)</MenuItem>
+                                {payments && payments.map((item) => (
+                                    <MenuItem key={item._id} value={item.value}>
+                                        {item.title}
+                                    </MenuItem>
+                                ))}
                             </Select>
                         </FormControl>
                         <div className='col-span-2'>
