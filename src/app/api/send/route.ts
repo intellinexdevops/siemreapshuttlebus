@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     const total = Number(passager) * Number(price);
 
     const { data, error } = await resend.emails.send({
-      from: process.env.NEXT_PUBLIC_EMAIL_FROM as string,
+      from: "no-reply <khonkhen@siemreapshuttlebus.com>",
       to: [requestData.to],
       subject: `Siem Reap Shuttle Bus Booking Confirmation #${requestData.orderRef}`,
       react: EmailTemplate({
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
         orderRef: requestData.orderRef,
         detailUrl: requestData.detailUrl,
       }),
-      cc: ["support@twelvemadeit.com"],
+      cc: ["khonkhen@siemreapshuttlebus.com"],
     });
 
     if (error) {
