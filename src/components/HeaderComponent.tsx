@@ -11,12 +11,15 @@ const HeaderComponent = () => {
         <header className='bg-white fixed left-0 right-0 top-0 z-50'>
             <div className='container mx-auto grid grid-cols-3 items-center h-[92px] md:px-0 px-6'>
                 <Link href="/" className='flex items-center gap-2'>
-                    <Image
-                        src="/_logo.png"
-                        alt='Logo'
-                        width={84}
-                        height={44}
-                    />
+                    <div className='w-[104px]'>
+                        <Image
+                            src="/_logo.png"
+                            alt='Logo'
+                            width={512}
+                            height={256}
+                            className='w-full'
+                        />
+                    </div>
                 </Link>
                 <nav>
                     <ul className='flex items-center justify-center gap-6'>

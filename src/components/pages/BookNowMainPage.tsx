@@ -4,7 +4,7 @@ import TextField from "@mui/material/TextField"
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import moment from 'moment';
-import { CircularProgress, FormControl, IconButton, InputAdornment, InputLabel, MenuItem, OutlinedInput, Select, SelectChangeEvent } from '@mui/material';
+import { Alert, CircularProgress, FormControl, IconButton, InputAdornment, InputLabel, MenuItem, OutlinedInput, Select, SelectChangeEvent, Snackbar } from '@mui/material';
 import SwapHorizOutlined from "@mui/icons-material/SwapHorizOutlined"
 import { Button } from '../ui/button';
 import ReCAPTCHA from "react-google-recaptcha";
@@ -190,7 +190,16 @@ const BookNowMainPage = ({
     const [isLoading, setIsLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
 
+    const [alert, setAlert] = useState(false)
+
     const handleBookNow = async () => {
+
+        if (!customerInfo?.email || !customerInfo.firstName || !customerInfo.lastName || !customerInfo.phoneNumber) {
+            setAlert(true);
+            setTimeout(() => { setAlert(false) }, 6000)
+            return;
+        }
+
         setIsLoading(true);
         try {
 
@@ -494,6 +503,7 @@ const BookNowMainPage = ({
                             required
                             label="First name"
                             type='text'
+                            error={!customerInfo?.lastName}
                             id='firstname'
                             value={customerInfo?.firstName ?? ""}
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -518,6 +528,7 @@ const BookNowMainPage = ({
                             label="Last name"
                             type='text'
                             id='lastname'
+                            error={!customerInfo?.lastName}
                             value={customerInfo?.lastName ?? ""}
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                 if (customerInfo) {
@@ -539,6 +550,7 @@ const BookNowMainPage = ({
                             required
                             label="Email"
                             type='email'
+                            error={!customerInfo?.email}
                             className='md:col-span-1 col-span-2'
                             value={customerInfo?.email ?? ""}
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -560,6 +572,7 @@ const BookNowMainPage = ({
                             required
                             label="Phone Number"
                             type='text'
+                            error={!customerInfo?.phoneNumber}
                             className='md:col-span-1 col-span-2'
                             value={customerInfo?.phoneNumber ?? ""}
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -671,6 +684,13 @@ const BookNowMainPage = ({
                     </div>
                 </DialogContent>
             </Dialog>
+            <Snackbar
+                open={alert}
+                autoHideDuration={6000}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <Alert severity='error' variant='filled' sx={{ width: "100%" }}>Please fill all fields required.</Alert>
+            </Snackbar>
         </section>
     )
 }

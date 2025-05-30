@@ -264,7 +264,7 @@ export default function EmailTemplate({
                                                 </Column>
                                                 <Column>
                                                     <Text className="text-xs leading-none my-0 text-neutral-400 ml-2.5">Phone</Text>
-                                                    <Text className="text-sm leading-none text-neutral-700 mb-0 mt-1 ml-2.5">066 810 555 / 085 86 14 24</Text>
+                                                    <Text className="text-sm leading-none text-neutral-700 mb-0 mt-1 ml-2.5">097 268 08 58 / 085 86 1424</Text>
                                                 </Column>
                                             </Row>
                                         </Section>
@@ -287,7 +287,7 @@ export default function EmailTemplate({
                                                 </Column>
                                                 <Column>
                                                     <Text className="text-xs leading-none my-0 text-neutral-400 ml-2.5">Email</Text>
-                                                    <Link href={`mailto:contact@sr-airportbus.com`} className="text-sm leading-none underline mb-0 mt-1 ml-2.5">contact@sr-airportbus.com</Link>
+                                                    <Link href={`mailto:khonkhen@siemreapshuttlebus.com`} className="text-sm leading-none underline mb-0 mt-1 ml-2.5">khonkhen@siemreapshuttlebus.com</Link>
                                                 </Column>
                                             </Row>
                                         </Section>
@@ -296,17 +296,19 @@ export default function EmailTemplate({
                             </Section>
                         </Section>
                     </Container>
-                    <Section style={{ padding: 14 }}>
-                        <Text className="text-center">&copy; Copyright 2025 - SiemReapShuttleBus</Text>
-                        <Row>
-                            <Column align="center">
-                                <Link href="https://siemreapshuttlebus/terms-condition" className='text-sm'>Terms & Conditions</Link>
-                            </Column>
-                            <Column align="center">
-                                <Link href="https://siemreapshuttlebus/privacy-policy" className='text-sm'>Privacy Policy</Link>
-                            </Column>
-                        </Row>
-                    </Section>
+                    <Container>
+                        <Section style={{ padding: 14 }}>
+                            <Text className="text-center">&copy; Copyright 2025 - SiemReapShuttleBus</Text>
+                            <Row align="left">
+                                <Column align="center">
+                                    <Link href="https://siemreapshuttlebus/terms-condition" className='text-sm text-center'>Terms & Conditions</Link>
+                                </Column>
+                                <Column align="center">
+                                    <Link href="https://siemreapshuttlebus/privacy-policy" className='text-sm text-center'>Privacy Policy</Link>
+                                </Column>
+                            </Row>
+                        </Section>
+                    </Container>
                 </Body>
             </Tailwind>
         </Html>
@@ -314,7 +316,7 @@ export default function EmailTemplate({
 };
 
 EmailTemplate.PreviewProps = {
-    name: "Chenter",
+    name: "Chenter PHAI",
     total: "24",
     issuedDate: "May 22, 2025 20:00",
     ticketType: "Airplane Ticket",
