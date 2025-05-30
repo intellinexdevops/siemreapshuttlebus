@@ -40,7 +40,7 @@ export async function POST(request: Request) {
         orderRef: requestData.orderRef,
         detailUrl: requestData.detailUrl,
       }),
-      cc: ["khonkhen@siemreapshuttlebus.com"],
+      cc: ["support@siemreapshuttlebus.com", "khonkhen@siemreapshuttlebus.com"],
     });
 
     if (error) {
