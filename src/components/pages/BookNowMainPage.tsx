@@ -111,7 +111,7 @@ const BookNowMainPage = ({
     // Passenger selection state
     const [passager, setPassager] = useState('1');
 
-    const handleChange = (event: SelectChangeEvent) => {
+    const handlePassagerChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setPassager(event.target.value as string);
     };
 
@@ -366,8 +366,8 @@ const BookNowMainPage = ({
 
                         <div className='grid grid-cols-2 col-span-2 gap-4'>
                             <div>
-                                <FormControl fullWidth>
-                                    <InputLabel id="passenger-select-label">No. Passager</InputLabel>
+                                {/* <FormControl fullWidth>
+                                     <InputLabel id="passenger-select-label">No. Passager</InputLabel>
                                     <Select
                                         labelId="passenger-select-label"
                                         id="passenger-select"
@@ -379,6 +379,20 @@ const BookNowMainPage = ({
                                         <MenuItem value={'2'}>2 passagers</MenuItem>
                                         <MenuItem value={'3'}>3 passagers</MenuItem>
                                     </Select>
+                                </FormControl> */}
+                                <FormControl sx={{}} variant="outlined">
+                                    <InputLabel id="passenger-select-label">No. Passager</InputLabel>
+                                    <OutlinedInput
+                                        id="outlined-adornment-passager"
+                                        label="No. Passager"
+                                        endAdornment={(parseInt(passager) > 0 && parseInt(passager) < 2) ? <InputAdornment position="end" >passager</InputAdornment> : parseInt(passager) > 1 ? <InputAdornment position="end" >passagers</InputAdornment> : <></>}
+                                        aria-describedby="outlined-passager-helper-text"
+                                        inputProps={{
+                                            'aria-label': 'passager',
+                                        }}
+                                        value={passager}
+                                        onChange={(e) => handlePassagerChange(e)}
+                                    />
                                 </FormControl>
                             </div>
 

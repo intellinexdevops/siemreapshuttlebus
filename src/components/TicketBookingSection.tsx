@@ -30,7 +30,7 @@ interface Departure {
 const TicketBookingSection = ({
     departureFrom,
     departureTo
-}:{
+}: {
     departureFrom: Departure[],
     departureTo: Departure[],
 }) => {
@@ -56,18 +56,11 @@ const TicketBookingSection = ({
     };
 
     // Return time-related state and handlers
-    const [returnTime, setReturnTime] = useState<Date | null>(today);
-    const [isReturnTimeOpen, setIsReturnTimeOpen] = useState(false);
-    const returnTimePickerRef = useRef(null);
+    const [returnTime, setReturnTime] = useState<string | null>(null);
 
-    const handleReturnTimeFocus = () => {
-        setIsReturnTimeOpen(true);
-    };
-
-    const handleReturnTimeChange = (date: Date | null) => {
-        setReturnTime(date);
-        setIsReturnTimeOpen(false);
-    };
+    const handleChangeReturnTime = (date: string | null) => {
+        setReturnTime(date)
+    }
 
     // Departure date related state and handlers
     const [selectedDate, setSelectedDate] = useState<Date | null>(today);
@@ -307,32 +300,41 @@ const TicketBookingSection = ({
                                 </div>
 
                                 <div className='relative lg:col-span-1 col-span-2'>
-                                    <TextField
-                                        required
-                                        label="Return Time"
-                                        className='w-full'
-                                        id="return-time-field"
-                                        value={returnTime ? moment(returnTime).format("hh:mm A") : ""}
-                                        onFocus={handleReturnTimeFocus}
-                                        InputProps={{ readOnly: true }}
-                                    />
-                                    {isReturnTimeOpen && (
-                                        <div className="absolute top-8 z-10 right-1/2">
-                                            <DatePicker
-                                                selected={returnTime}
-                                                onChange={(date) => handleReturnTimeChange(date)}
-                                                showTimeSelect
-                                                showTimeSelectOnly
-                                                timeIntervals={15}
-                                                timeCaption="Time"
-                                                dateFormat="hh:mm a"
-                                                open={true}
-                                                onClickOutside={() => setIsReturnTimeOpen(false)}
-                                                ref={returnTimePickerRef}
-                                                className='hidden'
-                                            />
-                                        </div>
-                                    )}
+                                    <FormControl fullWidth>
+                                        {departureTo ? (
+                                            <>
+                                                <InputLabel id="return-time-select-label">Return Time</InputLabel>
+                                                <Select
+                                                    labelId="return-time-select-label"
+                                                    id="departure-time-select"
+                                                    value={returnTime ?? departureTo[0].time}
+                                                    label="Departure Time"
+                                                    onChange={(e) => handleChangeReturnTime(e.target.value)}
+                                                >
+                                                    {
+                                                        departureTo.map((item, index) => (
+                                                            <MenuItem key={index} value={item.time}>
+                                                                {item.time}
+                                                            </MenuItem>
+                                                        )
+                                                        )
+                                                    }
+                                                </Select>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <TextField
+                                                    id="return-time-select"
+                                                    disabled
+                                                    label="Return Time"
+                                                    onChange={(e) => handleTimeChange(e.target.value)}
+                                                    value={moment(today).format("HH:mm A")}
+                                                />
+                                                <CircularProgress className='absolute top-4 right-4' size={20} />
+
+                                            </>
+                                        )}
+                                    </FormControl>
                                 </div>
                             </>
                         )}

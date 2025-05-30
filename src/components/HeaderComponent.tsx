@@ -12,12 +12,11 @@ const HeaderComponent = () => {
             <div className='container mx-auto grid grid-cols-3 items-center h-[92px] md:px-0 px-6'>
                 <Link href="/" className='flex items-center gap-2'>
                     <Image
-                        src="/bus.svg"
+                        src="/_logo.png"
                         alt='Logo'
-                        width={24}
-                        height={24}
+                        width={84}
+                        height={44}
                     />
-                    <span className='text-lg font-medium uppercase text-primary hidden md:flex'>siem reap shuttle bus</span>
                 </Link>
                 <nav>
                     <ul className='flex items-center justify-center gap-6'>
