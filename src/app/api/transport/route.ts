@@ -21,6 +21,9 @@ export async function POST(request: Request) {
     }
 
     const today = new Date();
+    const cambodiaDate = new Date(
+      today.toLocaleString("en-US", { timeZone: "Asia/Phnom_Penh" })
+    );
 
     const total = Number(passager) * Number(price);
 
@@ -31,7 +34,7 @@ export async function POST(request: Request) {
       react: EmailTemplateTransportation({
         name: requestData.name || "John",
         email: requestData.to,
-        issuedDate: moment(today).format("MMM DD, YYYY HH:mm:ss"),
+        issuedDate: moment(cambodiaDate).format("MMM DD, YYYY HH:mm:ss"),
         passager: parseInt(requestData.passager),
         phone: requestData.phone,
         price: requestData.price,

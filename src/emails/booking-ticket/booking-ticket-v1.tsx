@@ -318,7 +318,7 @@ export default function EmailTemplate({
 EmailTemplate.PreviewProps = {
     name: "Chenter PHAI",
     total: "24",
-    issuedDate: "May 22, 2025 20:00",
+    issuedDate: new Date().toISOString(),
     ticketType: "Bus Ticket",
     price: "8",
     passager: 3,
