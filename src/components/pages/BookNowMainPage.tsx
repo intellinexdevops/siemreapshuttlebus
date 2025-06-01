@@ -56,7 +56,7 @@ const BookNowMainPage = ({
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
     React.useEffect(() => {
-        if (selectedTime === null) { // only set if nothing selected yet
+        if (selectedTime === null) {
             if (JSON.parse(bookingData!)) {
                 setSelectedTime(JSON.parse(bookingData!).departureTime)
             }
@@ -70,7 +70,6 @@ const BookNowMainPage = ({
 
     const handleTimeChange = (date: string | null) => {
         setSelectedTime(date);
-        // setIsOpen(false);
     };
 
     // Return time-related state and handlers

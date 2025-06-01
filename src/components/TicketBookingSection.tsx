@@ -57,18 +57,26 @@ const TicketBookingSection = ({
         if (bookingData) {
             setSelectedTime(JSON.parse(bookingData!).departureTime)
         }
-        if (selectedTime === null) { // only set if nothing selected yet
-            if (direction === "from" && departureFrom?.length) {
-                setSelectedTime(departureFrom[0].time);
-            } else if (direction === "to" && departureTo?.length) {
-                setSelectedTime(departureTo[0].time);
+    }, [bookingData]);
+
+    React.useEffect(() => {
+        if (direction === "from" && departureFrom?.length) {
+            if (!selectedTime || !departureFrom.some((item) => item.time === selectedTime)) {
+                if (departureFrom[0]?.time) {
+                    setSelectedTime(departureFrom[0].time);
+                }
+            }
+        } else if (direction === "to" && departureTo?.length) {
+            if (!selectedTime || !departureTo.some((item) => item.time === selectedTime)) {
+                if (departureTo[0]?.time) {
+                    setSelectedTime(departureTo[0].time);
+                }
             }
         }
-    }, [direction, departureFrom, departureTo, selectedTime, bookingData]);
+    }, [departureFrom, departureTo, direction, selectedTime]);
 
     const handleTimeChange = (date: string | null) => {
         setSelectedTime(date);
-        // setIsOpen(false);
     };
 
     // Return time-related state and handlers
