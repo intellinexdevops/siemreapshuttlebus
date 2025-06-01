@@ -3,7 +3,20 @@ import React from 'react'
 import { Button } from './ui/button'
 import { Maps } from './Map'
 
-const AirportShuttleBusSection = () => {
+const AirportShuttleBusSection = ({
+    support
+}: {
+    support: {
+        value: string;
+        title: string;
+        url: string;
+    }
+}) => {
+
+    const handleMapClick = () => {
+        window.open(support.value)
+    }
+
     return (
         <section className='container mx-auto mt-[62px]'>
             <div>
@@ -25,14 +38,16 @@ const AirportShuttleBusSection = () => {
                             </div>
                         </div>
                         <div>
-                            <p className='text-[13px] text-neutral-50 font-light mt-5'>Arrival and departure from the bus station in Siem Reap town is at CDF Duty Free shop, which is a 3 minutes ride by TukTuk or 10 minutes walk from the city centre.</p>
                             <p className='text-[13px] text-neutral-50 font-light mt-5'>
-                                There is always a team of TukTuk drivers waiting for you at CDF to bring you to your hotel or guesthouse for a fixed price of $1.
+                                Our bus station is conveniently situated on 7 Makara Road, right in front of ACE, and just a short walk from the Old Market area.
+                            </p>
+                            <p className='text-[13px] text-neutral-50 font-light mt-5'>
+                                Most hotels and guesthouses are only a few minutes away by TukTuk. A group of friendly TukTuk drivers is always on hand at the station, ready to take you to your accommodation for a fixed fare of just $1.
                             </p>
                         </div>
                         <div className='mt-24'>
-                            <Button className='bg-white text-neutral-800 w-full py-5 cursor-pointer hover:bg-neutral-200'>
-                                View Maps
+                            <Button onClick={handleMapClick} className='bg-white text-neutral-800 w-full py-5 cursor-pointer hover:bg-neutral-200'>
+                                Chat with Us
                             </Button>
                         </div>
                     </div>

@@ -5,53 +5,75 @@ import TextField from "@mui/material/TextField"
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import moment from 'moment';
-import { FormControl, IconButton, InputAdornment, InputLabel, MenuItem, OutlinedInput, Select, SelectChangeEvent } from '@mui/material';
-import Link from 'next/link';
+
+import { Alert, CircularProgress, FormControl, IconButton, InputAdornment, InputLabel, MenuItem, OutlinedInput, Select, SelectChangeEvent, Snackbar } from '@mui/material';
 import SwapHorizOutlined from "@mui/icons-material/SwapHorizOutlined"
 import { Button } from '../ui/button';
 import ReCAPTCHA from "react-google-recaptcha";
-import { Preloaded, usePreloadedQuery } from 'convex/react';
+import { Preloaded, useMutation, usePreloadedQuery, useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { Skeleton } from "@/components/ui/skeleton"
 import Image from 'next/image';
 import { TransportationType } from "@/components/PrivateTransportationServiceSection";
+import Loading from '@/app/loading';
+import axios from 'axios';
+import { Payment } from '@/types/payments';
+import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
+import Link from 'next/link';
+
+type CustomerInfoType = {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phoneNumber: string;
+    paymentInfo: string;
+    specialRequest: string | undefined;
+}
 
 const BookTransportationMainPage = ({
     preloadedTransportation,
+    preloadedPayment
 }: {
-    preloadedTransportation: Preloaded<typeof api.transportation.select>
+    preloadedTransportation: Preloaded<typeof api.transportation.select>,
+    preloadedPayment: Preloaded<typeof api.payments.get>
 }) => {
 
     const transportation: TransportationType = usePreloadedQuery(preloadedTransportation)
+    const payments: Payment[] = usePreloadedQuery(preloadedPayment);
+    const mutateTransaction = useMutation(api.transactions.create);
+    const departureFrom = useQuery(api.airplane_time.getFrom);
+    const departureTo = useQuery(api.airplane_time.getTo);
+
+    const [direction, setDirection] = useState("from");
+    const [tranId, setTranId] = useState<string | null>(null);
 
     const today = new Date();
     // Departure time related state and handlers
-    const [selectedTime, setSelectedTime] = useState<Date | null>(today);
-    const [isOpen, setIsOpen] = useState(false);
-    const timePickerRef = useRef(null);
+    const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
-    const handleTimeFocus = () => {
-        setIsOpen(true);
-    };
+    React.useEffect(() => {
+        if (selectedTime === null) { // only set if nothing selected yet
+            if (direction === "from" && departureFrom?.length) {
+                setSelectedTime(departureFrom[0].time);
+            } else if (direction === "to" && departureTo?.length) {
+                setSelectedTime(departureTo[0].time);
+            }
+        }
+    }, [direction, departureFrom, departureTo, selectedTime]);
 
-    const handleTimeChange = (date: Date | null) => {
+    const handleTimeChange = (date: string | null) => {
         setSelectedTime(date);
-        setIsOpen(false);
+        // setIsOpen(false);
     };
+
+
 
     // Return time related state and handlers
-    const [returnTime, setReturnTime] = useState<Date | null>(today);
-    const [isReturnTimeOpen, setIsReturnTimeOpen] = useState(false);
-    const returnTimePickerRef = useRef(null);
+    const [returnTime, setReturnTime] = useState<string | null>(null);
 
-    const handleReturnTimeFocus = () => {
-        setIsReturnTimeOpen(true);
-    };
-
-    const handleReturnTimeChange = (date: Date | null) => {
-        setReturnTime(date);
-        setIsReturnTimeOpen(false);
-    };
+    const handleChangeReturnTime = (date: string | null) => {
+        setReturnTime(date)
+    }
 
     // Departure date related state and handlers
     const [selectedDate, setSelectedDate] = useState<Date | null>(today);
@@ -89,50 +111,46 @@ const BookTransportationMainPage = ({
     // Passenger selection state
     const [passager, setPassager] = useState('1');
 
-    const handleChange = (event: SelectChangeEvent) => {
+    const handlePassagerChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setPassager(event.target.value as string);
     };
 
+
     // Payment Method
-    const [payment, setPayment] = useState('cash')
+    const [payment, setPayment] = useState(payments && payments.length > 0 ? payments[0].value : '');
 
     const handleChangePayment = (event: SelectChangeEvent) => {
         setPayment(event.target.value as string)
     }
 
     // Trip type selection state
-    const [trip, setTrip] = useState('1');
+    const [trip, setTrip] = useState('One Way');
 
     const handleChangeTrip = (event: SelectChangeEvent) => {
         setTrip(event.target.value as string);
 
-        // When switching to round trip, initialize return date and time if needed
-        if (event.target.value === '2' && selectedDate) {
-            // Set return date to at least the departure date
+        // When switching to the round trip, initialize the return date and time if needed
+        if (event.target.value === 'Round trip' && selectedDate) {
+            // Set the return date to at least the departure date
             const nextDay = new Date(selectedDate);
             nextDay.setDate(nextDay.getDate() + 1);
             setReturnDate(nextDay);
-
-            // Set a reasonable default return time (same time as departure)
-            if (selectedTime) {
-                const defaultReturnTime = new Date(selectedTime);
-                setReturnTime(defaultReturnTime);
-            }
         }
     };
-
-    const [direction, setDirection] = useState("from");
-    const airport = "SR Int. Airport";
+    const airport = {
+        name: "SR. Int. Airport",
+        value: "SAI"
+    };
     const siemreap = "Siem Reap Town";
-    const [displayDirection, setDisplayDirection] = useState<string>(`${airport} - ${siemreap}`)
+    const [displayDirection, setDisplayDirection] = useState<string>(`${airport.name} - ${siemreap}`)
 
     const handleOnSwapChange = () => {
         if (direction === "from") {
             setDirection("to")
-            setDisplayDirection(`${siemreap} - ${airport}`)
+            setDisplayDirection(`${siemreap} - ${airport.name}`)
         } else {
             setDirection("from")
-            setDisplayDirection(`${airport} - ${siemreap}`)
+            setDisplayDirection(`${airport.name} - ${siemreap}`)
         }
     }
 
@@ -167,8 +185,83 @@ const BookTransportationMainPage = ({
         setIsVerified(false);
     }
 
+    const [customerInfo, setCustomerInfo] = useState<CustomerInfoType | null>(null)
+
+    const [isLoading, setIsLoading] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
+
+    const [alert, setAlert] = useState(false)
+
+    const handleBookNow = async () => {
+
+        if (!customerInfo?.email || !customerInfo.firstName || !customerInfo.lastName || !customerInfo.phoneNumber) {
+            setAlert(true);
+            setTimeout(() => { setAlert(false) }, 6000)
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+
+            const orderRef = `SR-${Date.now().toString().slice(-6)}`;
+            const departureDate = selectedDate ? `${moment(selectedDate).format("DD MMM YYYY")} / ${selectedTime}` : "";
+            const issuedDate = moment(today).format("MMM DD, YYYY");
+            const returnDateData = returnDate && trip === "Round trip" ? `${moment(returnDate).format("MMM DD, YYYY")} / ${moment(returnTime).format("HH:mm A")}` : "";
+
+            await mutateTransaction({
+                order_ref: orderRef,
+                departure_date: departureDate,
+                email: customerInfo?.email as string,
+                name: `${customerInfo?.firstName} ${customerInfo?.lastName}`,
+                passager: Number(passager),
+                phone: customerInfo?.phoneNumber as string,
+                ticket_type: transportation.title,
+                total: Number(passager) * Number(transportation.price),
+                issued_date: issuedDate,
+                special_request: customerInfo?.specialRequest ?? "",
+                payment_method: payment,
+                return_date: returnDateData,
+                trip: trip,
+                from: direction === "from" ? airport.value : siemreap,
+                to: direction === "from" ? siemreap : airport.value
+            }).then(async (res) => {
+                setTranId(res)
+                // Send email with booking details
+                const data = {
+                    to: customerInfo?.email,
+                    name: `${customerInfo?.firstName} ${customerInfo?.lastName}`,
+                    ticketType: transportation.title,
+                    phone: customerInfo?.phoneNumber,
+                    passager: Number(passager),
+                    price: transportation.price as string,
+                    email: customerInfo?.email,
+                    detailUrl: res,
+                    orderRef: orderRef,
+                    imageUrl: transportation.url
+                }
+
+                const response = await axios.post('/api/transport', data)
+
+                if (response.data.status.code === 0) {
+                    setCustomerInfo(null)
+                    setIsSuccess(true)
+                }
+            }).catch((err) => {
+                console.log(err);
+            })
+
+        } catch (e) {
+            console.log(e)
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
     return (
         <section className='mt-[132px] mb-[100px]' >
+            {isLoading && (
+                <Loading />
+            )}
             <div className='container mx-auto bg-white p-5 rounded-lg'>
                 <div className='flex'>
                     <div className='flex flex-col gap-y-2'>
@@ -218,8 +311,9 @@ const BookTransportationMainPage = ({
                                                 aria-label='swap'
                                                 edge="end"
                                                 onClick={handleOnSwapChange}
-                                            />
-                                            <SwapHorizOutlined />
+                                            >
+                                                <SwapHorizOutlined />
+                                            </IconButton>
                                         </InputAdornment>
                                     }
                                 />
@@ -227,32 +321,57 @@ const BookTransportationMainPage = ({
                         </div>
 
                         <div className='relative lg:col-span-1 col-span-2'>
-                            <TextField
-                                required
-                                label="Departure Time"
-                                className='w-full'
-                                id="departure-time-field"
-                                value={selectedTime ? moment(selectedTime).format("hh:mm A") : ""}
-                                onFocus={handleTimeFocus}
-                                InputProps={{ readOnly: true }}
-                            />
-                            {isOpen && (
-                                <div className="absolute top-8 z-10 right-1/2">
-                                    <DatePicker
-                                        selected={selectedTime}
-                                        onChange={(date) => handleTimeChange(date)}
-                                        showTimeSelect
-                                        showTimeSelectOnly
-                                        timeIntervals={15}
-                                        timeCaption="Time"
-                                        dateFormat="hh:mm a"
-                                        open={true}
-                                        onClickOutside={() => setIsOpen(false)}
-                                        ref={timePickerRef}
-                                        className='hidden'
-                                    />
-                                </div>
-                            )}
+                            <FormControl fullWidth>
+                                {departureFrom && departureTo ? (
+                                    <>
+                                        <InputLabel id="departure-time-select-label">Departure Time</InputLabel>
+                                        <Select
+                                            labelId="departure-time-select-label"
+                                            id="departure-time-select"
+                                            value={selectedTime ?? ""}
+                                            label="Departure Time"
+                                            onChange={(e) => handleTimeChange(e.target.value)}
+                                        >
+                                            {(direction === 'from') && (
+                                                departureFrom ? (
+                                                    departureFrom.map((item, index) => (
+                                                        <MenuItem key={index} value={item.time}>
+                                                            {item.time}
+                                                        </MenuItem>
+                                                    ))) : (<div className='flex justify-center items-center py-4'>
+                                                        <CircularProgress size={20} />
+                                                    </div>
+                                                )
+                                            )}
+
+                                            {(direction === 'to') && (
+                                                departureTo ? (
+                                                    departureTo.map((item, index) => (
+                                                        <MenuItem key={index} value={item.time}>
+                                                            {item.time}
+                                                        </MenuItem>
+                                                    ))) : (<div className='flex justify-center items-center py-4'>
+                                                        <CircularProgress size={20} />
+                                                    </div>
+                                                )
+                                            )}
+                                        </Select>
+                                    </>
+                                ) : (
+                                    <>
+                                        <TextField
+                                            id="departure-time-select"
+                                            disabled
+                                            label="Departure Time"
+                                            onChange={(e) => handleTimeChange(e.target.value)}
+                                            value={moment(today).format("HH:mm A")}
+                                        />
+                                        <CircularProgress className='absolute top-4 right-4' size={20} />
+
+                                    </>
+                                )}
+                            </FormControl>
+
                         </div>
                         <div className='relative lg:col-span-1 col-span-2'>
                             <TextField
@@ -282,19 +401,19 @@ const BookTransportationMainPage = ({
 
                         <div className='grid grid-cols-2 col-span-2 gap-4'>
                             <div>
-                                <FormControl fullWidth>
+                                <FormControl sx={{}} variant="outlined">
                                     <InputLabel id="passenger-select-label">No. Passager</InputLabel>
-                                    <Select
-                                        labelId="passenger-select-label"
-                                        id="passenger-select"
-                                        value={passager}
+                                    <OutlinedInput
+                                        id="outlined-adornment-passager"
                                         label="No. Passager"
-                                        onChange={handleChange}
-                                    >
-                                        <MenuItem value={'1'}>1 passager</MenuItem>
-                                        <MenuItem value={'2'}>2 passagers</MenuItem>
-                                        <MenuItem value={'3'}>3 passagers</MenuItem>
-                                    </Select>
+                                        endAdornment={(parseInt(passager) > 0 && parseInt(passager) < 2) ? <InputAdornment position="end" >passager</InputAdornment> : parseInt(passager) > 1 ? <InputAdornment position="end" >passagers</InputAdornment> : <></>}
+                                        aria-describedby="outlined-passager-helper-text"
+                                        inputProps={{
+                                            'aria-label': 'passager',
+                                        }}
+                                        value={passager}
+                                        onChange={(e) => handlePassagerChange(e)}
+                                    />
                                 </FormControl>
                             </div>
 
@@ -308,14 +427,14 @@ const BookTransportationMainPage = ({
                                         label="Trip"
                                         onChange={handleChangeTrip}
                                     >
-                                        <MenuItem value={'1'}>One Way</MenuItem>
-                                        <MenuItem value={'2'}>Round trip</MenuItem>
+                                        <MenuItem value={'One Way'}>One Way</MenuItem>
+                                        <MenuItem value={'Round trip'}>Round trip</MenuItem>
                                     </Select>
                                 </FormControl>
                             </div>
 
                         </div>
-                        {trip === "2" && (
+                        {trip === "Round trip" && (
                             <>
                                 <div className='relative col-span-2'>
                                     <TextField
@@ -344,32 +463,41 @@ const BookTransportationMainPage = ({
                                 </div>
 
                                 <div className='relative lg:col-span-1 col-span-2'>
-                                    <TextField
-                                        required
-                                        label="Return Time"
-                                        className='w-full'
-                                        id="return-time-field"
-                                        value={returnTime ? moment(returnTime).format("hh:mm A") : ""}
-                                        onFocus={handleReturnTimeFocus}
-                                        InputProps={{ readOnly: true }}
-                                    />
-                                    {isReturnTimeOpen && (
-                                        <div className="absolute top-8 z-10 right-1/2">
-                                            <DatePicker
-                                                selected={returnTime}
-                                                onChange={(date) => handleReturnTimeChange(date)}
-                                                showTimeSelect
-                                                showTimeSelectOnly
-                                                timeIntervals={15}
-                                                timeCaption="Time"
-                                                dateFormat="hh:mm a"
-                                                open={true}
-                                                onClickOutside={() => setIsReturnTimeOpen(false)}
-                                                ref={returnTimePickerRef}
-                                                className='hidden'
-                                            />
-                                        </div>
-                                    )}
+                                    <FormControl fullWidth>
+                                        {departureTo ? (
+                                            <>
+                                                <InputLabel id="return-time-select-label">Return Time</InputLabel>
+                                                <Select
+                                                    labelId="return-time-select-label"
+                                                    id="departure-time-select"
+                                                    value={returnTime ?? departureTo[0].time}
+                                                    label="Departure Time"
+                                                    onChange={(e) => handleChangeReturnTime(e.target.value)}
+                                                >
+                                                    {
+                                                        departureTo.map((item, index) => (
+                                                            <MenuItem key={index} value={item.time}>
+                                                                {item.time}
+                                                            </MenuItem>
+                                                        )
+                                                        )
+                                                    }
+                                                </Select>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <TextField
+                                                    id="return-time-select"
+                                                    disabled
+                                                    label="Return Time"
+                                                    onChange={(e) => handleTimeChange(e.target.value)}
+                                                    value={moment(today).format("HH:mm A")}
+                                                />
+                                                <CircularProgress className='absolute top-4 right-4' size={20} />
+
+                                            </>
+                                        )}
+                                    </FormControl>
                                 </div>
                             </>
                         )}
@@ -387,27 +515,92 @@ const BookTransportationMainPage = ({
                             required
                             label="First name"
                             type='text'
+                            error={!customerInfo?.lastName}
                             id='firstname'
+                            value={customerInfo?.firstName ?? ""}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                if (customerInfo) {
+                                    setCustomerInfo({ ...customerInfo, firstName: e.target.value });
+                                } else {
+                                    setCustomerInfo({
+                                        firstName: e.target.value,
+                                        lastName: '',
+                                        email: '',
+                                        phoneNumber: '',
+                                        paymentInfo: '',
+                                        specialRequest: ''
+                                    });
+                                }
+                            }}
                         />
                         <TextField
                             required
                             label="Last name"
                             type='text'
                             id='lastname'
+                            error={!customerInfo?.lastName}
+                            value={customerInfo?.lastName ?? ""}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                if (customerInfo) {
+                                    setCustomerInfo({ ...customerInfo, lastName: e.target.value });
+                                } else {
+                                    setCustomerInfo({
+                                        firstName: '',
+                                        lastName: e.target.value,
+                                        email: '',
+                                        phoneNumber: '',
+                                        paymentInfo: '',
+                                        specialRequest: ''
+                                    });
+                                }
+                            }}
                         />
+
                         <TextField
                             required
                             label="Email"
                             type='email'
-                            className='col-span-2 md:col-span-1'
+                            error={!customerInfo?.email}
+                            className='md:col-span-1 col-span-2'
+                            value={customerInfo?.email ?? ""}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                if (customerInfo) {
+                                    setCustomerInfo({ ...customerInfo, email: e.target.value });
+                                } else {
+                                    setCustomerInfo({
+                                        firstName: '',
+                                        lastName: '',
+                                        email: e.target.value,
+                                        phoneNumber: '',
+                                        paymentInfo: '',
+                                        specialRequest: ''
+                                    });
+                                }
+                            }}
                         />
                         <TextField
                             required
                             label="Phone Number"
                             type='text'
-                            className='col-span-2 md:col-span-1'
+                            error={!customerInfo?.phoneNumber}
+                            className='md:col-span-1 col-span-2'
+                            value={customerInfo?.phoneNumber ?? ""}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                if (customerInfo) {
+                                    setCustomerInfo({ ...customerInfo, phoneNumber: e.target.value });
+                                } else {
+                                    setCustomerInfo({
+                                        firstName: '',
+                                        lastName: '',
+                                        email: '',
+                                        phoneNumber: e.target.value,
+                                        paymentInfo: '',
+                                        specialRequest: ''
+                                    });
+                                }
+                            }}
                         />
-                        <FormControl fullWidth className='col-span-2 md:col-span-1'>
+                        <FormControl fullWidth className='md:col-span-1 col-span-2'>
                             <InputLabel id="payment-select-label">Payment Method</InputLabel>
                             <Select
                                 labelId="payment-select-label"
@@ -416,9 +609,11 @@ const BookTransportationMainPage = ({
                                 label="Payment Method"
                                 onChange={handleChangePayment}
                             >
-                                <MenuItem value={'cash'}>Cash</MenuItem>
-                                <MenuItem value={'khqr'}>KHQR</MenuItem>
-                                <MenuItem value={'abapay'}>ABA PAY</MenuItem>
+                                {payments && payments.map((item) => (
+                                    <MenuItem key={item._id} value={item.value}>
+                                        {item.title}
+                                    </MenuItem>
+                                ))}
                             </Select>
                         </FormControl>
                         <div className='col-span-2'>
@@ -430,6 +625,21 @@ const BookTransportationMainPage = ({
                                 id='special-request'
                                 placeholder='Ex: I need a bottle of water'
                                 maxRows={4}
+                                value={customerInfo?.specialRequest ?? ""}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                    if (customerInfo) {
+                                        setCustomerInfo({ ...customerInfo, specialRequest: e.target.value });
+                                    } else {
+                                        setCustomerInfo({
+                                            firstName: '',
+                                            lastName: '',
+                                            email: '',
+                                            phoneNumber: '',
+                                            paymentInfo: '',
+                                            specialRequest: e.target.value
+                                        });
+                                    }
+                                }}
                             />
                         </div>
                     </div>
@@ -444,14 +654,53 @@ const BookTransportationMainPage = ({
                         />
                     </div>
                     <div className=''>
-                        <Link href="/book-ticket">
-                            <Button className='h-12 w-full rounded cursor-pointer' disabled={!isVerified}>
-                                Book Now
-                            </Button>
-                        </Link>
+
+                        <Button className='h-12 w-full rounded cursor-pointer' disabled={!isVerified} onClick={handleBookNow}>
+                            Book Now
+                        </Button>
+
                     </div>
                 </div>
             </div>
+            <Dialog modal open={isSuccess} onOpenChange={setIsSuccess}>
+                <DialogTitle>
+                </DialogTitle>
+                <DialogContent>
+                    <div className='flex flex-col items-center justify-center'>
+                        <Image
+                            src="/email-tick.svg"
+                            alt='Success Booking'
+                            width={50}
+                            height={50}
+                            loading='lazy'
+                        />
+                        <p className='md:text-xl text-center text-lg font-medium text-neutral-700 mt-4'>
+                            Your booking has been confirmed!
+                        </p>
+                        <p className='text-sm text-neutral-500 mt-2 text-center'>
+                            Check your email for detail and bring <br /> confirmation number upon arrival.
+                        </p>
+                        <div className='mt-6 flex items-center gap-x-4'>
+                            <Link href={`/booking-detail/${tranId}`} passHref>
+                                <Button className='h-10 px-5 rounded cursor-pointer bg-neutral-100 text-neutral-500 hover:bg-neutral-200' onClick={() => setCustomerInfo(null)}>
+                                    View Detail
+                                </Button>
+                            </Link>
+
+                            <Button className='h-10 px-8 rounded cursor-pointer' onClick={() => setIsSuccess(false)}>
+                                Done
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+            <Snackbar
+                open={alert}
+                autoHideDuration={6000}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <Alert severity='error' variant='filled' sx={{ width: "100%" }}>Please fill all fields required.</Alert>
+            </Snackbar>
         </section>
     )
 }
