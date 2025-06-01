@@ -38,6 +38,8 @@ const BookNowMainPage = ({
 }: {
     preloadedPayments: Preloaded<typeof api.payments.get>
 }) => {
+    const bookingData = sessionStorage.getItem('TICKET_BOOKING_DATA');
+
     const today = new Date();
 
     const payments: Payment[] = usePreloadedQuery(preloadedPayments);
@@ -47,7 +49,7 @@ const BookNowMainPage = ({
     const departureFrom = useQuery(api.airplane_time.getFrom);
     const departureTo = useQuery(api.airplane_time.getTo);
 
-    const [direction, setDirection] = useState("from");
+    const [direction, setDirection] = useState(JSON.parse(bookingData!)?.direction ?? "from");
     const [tranId, setTranId] = useState<string | null>(null);
 
     // Departure time related state and handlers
@@ -55,13 +57,16 @@ const BookNowMainPage = ({
 
     React.useEffect(() => {
         if (selectedTime === null) { // only set if nothing selected yet
-            if (direction === "from" && departureFrom?.length) {
+            if (JSON.parse(bookingData!)) {
+                setSelectedTime(JSON.parse(bookingData!).departureTime)
+            }
+            else if (direction === "from" && departureFrom?.length) {
                 setSelectedTime(departureFrom[0].time);
             } else if (direction === "to" && departureTo?.length) {
                 setSelectedTime(departureTo[0].time);
             }
         }
-    }, [direction, departureFrom, departureTo, selectedTime]);
+    }, [direction, departureFrom, departureTo, selectedTime, bookingData]);
 
     const handleTimeChange = (date: string | null) => {
         setSelectedTime(date);
@@ -69,14 +74,14 @@ const BookNowMainPage = ({
     };
 
     // Return time-related state and handlers
-    const [returnTime, setReturnTime] = useState<string | null>(null);
+    const [returnTime, setReturnTime] = useState<string | null>(JSON.parse(bookingData!)?.returnTime ?? null);
 
     const handleChangeReturnTime = (date: string | null) => {
         setReturnTime(date)
     }
 
     // Departure date related state and handlers
-    const [selectedDate, setSelectedDate] = useState<Date | null>(today);
+    const [selectedDate, setSelectedDate] = useState<Date | null>(JSON.parse(bookingData!)?.departureDate ? new Date(JSON.parse(bookingData!)?.departureDate) : today);
     const [isDateOpen, setIsDateOpen] = useState<boolean>(false);
     const datePickerRef = useRef(null);
 
@@ -95,7 +100,7 @@ const BookNowMainPage = ({
     };
 
     // Return date related state and handlers
-    const [returnDate, setReturnDate] = useState<Date | null>(today);
+    const [returnDate, setReturnDate] = useState<Date | null>(JSON.parse(bookingData!)?.returnDate ? new Date(JSON.parse(bookingData!)?.returnDate) : today);
     const [isReturnDateOpen, setIsReturnDateOpen] = useState<boolean>(false);
     const returnDatePickerRef = useRef(null);
 
@@ -109,7 +114,7 @@ const BookNowMainPage = ({
     };
 
     // Passenger selection state
-    const [passager, setPassager] = useState('1');
+    const [passager, setPassager] = useState(JSON.parse(bookingData!)?.passager ?? '1');
 
     const handlePassagerChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setPassager(event.target.value as string);
@@ -123,13 +128,13 @@ const BookNowMainPage = ({
     }
 
     // Trip type selection state
-    const [trip, setTrip] = useState('One Way');
+    const [trip, setTrip] = useState(JSON.parse(bookingData!)?.trip ?? 'One Way');
 
     const handleChangeTrip = (event: SelectChangeEvent) => {
         setTrip(event.target.value as string);
 
         // When switching to the round trip, initialize the return date and time if needed
-        if (event.target.value === '2' && selectedDate) {
+        if (event.target.value === 'Round trip' && selectedDate) {
             // Set the return date to at least the departure date
             const nextDay = new Date(selectedDate);
             nextDay.setDate(nextDay.getDate() + 1);
@@ -142,7 +147,7 @@ const BookNowMainPage = ({
         value: "SAI"
     };
     const siemreap = "Siem Reap Town";
-    const [displayDirection, setDisplayDirection] = useState<string>(`${airport.name} - ${siemreap}`)
+    const [displayDirection, setDisplayDirection] = useState<string>(direction === "from" ? `${airport.name} - ${siemreap}` : `${siemreap} - ${airport.name}`)
 
     const handleOnSwapChange = () => {
         if (direction === "from") {

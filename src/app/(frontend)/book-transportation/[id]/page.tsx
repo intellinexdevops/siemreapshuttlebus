@@ -18,6 +18,11 @@ export default async function Page({
 
     const preloadedTransportation = await preloadQuery(api.transportation.select, { id: transportationId })
 
+    const preloadPayments = await preloadQuery(api.payments.get, {})
 
-    return <BookTransportationMainPage preloadedTransportation={preloadedTransportation} />
+
+    return <BookTransportationMainPage
+        preloadedTransportation={preloadedTransportation}
+        preloadedPayment={preloadPayments}
+    />
 }

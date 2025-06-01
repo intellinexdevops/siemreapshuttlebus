@@ -16,8 +16,8 @@ export interface TransportationType {
 }
 
 const PrivateTransportationServiceSection = ({
-transportations
-}:{
+    transportations
+}: {
     transportations: TransportationType[]
 }) => {
     return (

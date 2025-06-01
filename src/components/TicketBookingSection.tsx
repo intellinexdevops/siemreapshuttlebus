@@ -17,8 +17,8 @@ import {
 } from '@mui/material';
 import Image from 'next/image';
 import { Button } from './ui/button';
-import Link from 'next/link';
 import SwapHorizOutlined from "@mui/icons-material/SwapHorizOutlined"
+import { useRouter } from 'next/navigation';
 
 interface Departure {
     _creationTime: number;
@@ -36,19 +36,35 @@ const TicketBookingSection = ({
 }) => {
     const today = new Date();
     const [direction, setDirection] = useState("from");
+    const [bookingData, setBookingData] = useState(null);
+    const router = useRouter();
+
+    React.useEffect(() => {
+        const storedData = sessionStorage.getItem('TICKET_BOOKING_DATA');
+        if (storedData) {
+            try {
+                setBookingData(JSON.parse(storedData));
+            } catch (error) {
+                console.error('Error parsing booking data:', error);
+            }
+        }
+    }, []);
 
     // Departure time related state and handlers
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
     React.useEffect(() => {
         if (selectedTime === null) { // only set if nothing selected yet
-            if (direction === "from" && departureFrom?.length) {
+            if (JSON.parse(bookingData!)) {
+                setSelectedTime(JSON.parse(bookingData!).departureTime)
+            }
+            else if (direction === "from" && departureFrom?.length) {
                 setSelectedTime(departureFrom[0].time);
             } else if (direction === "to" && departureTo?.length) {
                 setSelectedTime(departureTo[0].time);
             }
         }
-    }, [direction, departureFrom, departureTo, selectedTime]);
+    }, [direction, departureFrom, departureTo, selectedTime, bookingData]);
 
     const handleTimeChange = (date: string | null) => {
         setSelectedTime(date);
@@ -56,14 +72,14 @@ const TicketBookingSection = ({
     };
 
     // Return time-related state and handlers
-    const [returnTime, setReturnTime] = useState<string | null>(null);
+    const [returnTime, setReturnTime] = useState<string | null>(JSON.parse(bookingData!)?.returnTime ?? null);
 
     const handleChangeReturnTime = (date: string | null) => {
         setReturnTime(date)
     }
 
     // Departure date related state and handlers
-    const [selectedDate, setSelectedDate] = useState<Date | null>(today);
+    const [selectedDate, setSelectedDate] = useState<Date | null>(JSON.parse(bookingData!)?.departureDate ? new Date(JSON.parse(bookingData!)?.departureDate) : today);
     const [isDateOpen, setIsDateOpen] = useState<boolean>(false);
     const datePickerRef = useRef(null);
 
@@ -82,7 +98,7 @@ const TicketBookingSection = ({
     };
 
     // Return date related state and handlers
-    const [returnDate, setReturnDate] = useState<Date | null>(today);
+    const [returnDate, setReturnDate] = useState<Date | null>(JSON.parse(bookingData!)?.returnDate ? new Date(JSON.parse(bookingData!)?.returnDate) : today);
     const [isReturnDateOpen, setIsReturnDateOpen] = useState<boolean>(false);
     const returnDatePickerRef = useRef(null);
 
@@ -96,22 +112,22 @@ const TicketBookingSection = ({
     };
 
     // Passenger selection state
-    const [passager, setPassanger] = useState('1');
+    const [passager, setPassager] = useState(JSON.parse(bookingData!)?.passager ?? '1');
 
     const handlePassagerChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        setPassanger(event.target.value as string);
+        setPassager(event.target.value as string);
     };
 
     // Trip type selection state
-    const [trip, setTrip] = useState('1');
+    const [trip, setTrip] = useState(JSON.parse(bookingData!)?.trip ?? 'One Way');
 
     const handleChangeTrip = (event: SelectChangeEvent) => {
         setTrip(event.target.value as string);
     };
 
-    const airport = "SR Int. Airport";
+    const airport = "SR. Int. Airport";
     const siemreap = "Siem Reap Town";
-    const [displayDirection, setDisplayDirection] = useState<string>(`${airport} - ${siemreap}`)
+    const [displayDirection, setDisplayDirection] = useState<string>(direction === "from" ? `${airport} - ${siemreap}` : `${siemreap} - ${airport}`)
 
     const handleOnSwapChange = () => {
         if (direction === "from") {
@@ -121,6 +137,21 @@ const TicketBookingSection = ({
             setDirection("from")
             setDisplayDirection(`${airport} - ${siemreap}`)
         }
+    }
+
+    const handleBookNow = () => {
+        const postData = {
+            direction: direction,
+            passager: passager,
+            departureTime: selectedTime,
+            departureDate: selectedDate,
+            trip: trip,
+            returnTime: returnTime,
+            returnDate: returnDate
+        }
+
+        sessionStorage.setItem('TICKET_BOOKING_DATA', JSON.stringify(postData));
+        router.push('/book-ticket');
     }
 
     return (
@@ -264,14 +295,14 @@ const TicketBookingSection = ({
                                         label="Trip"
                                         onChange={handleChangeTrip}
                                     >
-                                        <MenuItem value={'1'}>One Way</MenuItem>
-                                        <MenuItem value={'2'}>Round trip</MenuItem>
+                                        <MenuItem value={'One Way'}>One Way</MenuItem>
+                                        <MenuItem value={'Round trip'}>Round trip</MenuItem>
                                     </Select>
                                 </FormControl>
                             </div>
 
                         </div>
-                        {trip === "2" && (
+                        {trip === "Round trip" && (
                             <>
                                 <div className='relative col-span-2'>
                                     <TextField
@@ -374,11 +405,11 @@ const TicketBookingSection = ({
                         </div>
                     </div>
                     <div className=''>
-                        <Link href="/book-ticket">
-                            <Button className='h-12 w-full rounded cursor-pointer'>
-                                Book Now
-                            </Button>
-                        </Link>
+
+                        <Button className='h-12 w-full rounded cursor-pointer' onClick={handleBookNow}>
+                            Book Now
+                        </Button>
+
                     </div>
                 </div>
             </div>

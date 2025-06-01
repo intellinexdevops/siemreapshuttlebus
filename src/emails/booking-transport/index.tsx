@@ -10,7 +10,7 @@ import {
     Body,
     Row,
     Column,
-    Hr, Button, Tailwind,
+    Hr, Tailwind,
     Preview
 } from "@react-email/components";
 
@@ -25,13 +25,14 @@ interface EmailTemplateProps {
     email?: string;
     orderRef?: string;
     detailUrl?: string;
+    imageUrl?: string;
 }
 
 
 // const imageUrl = "http://localhost:3000"
-const imageUrl = "https://siemreapshuttlebus.netlify.app"
+const imageUrlBase = "https://siemreapshuttlebus.netlify.app"
 
-export default function EmailTemplate({
+export default function EmailTemplateTransportation({
     name,
     total,
     issuedDate,
@@ -42,6 +43,7 @@ export default function EmailTemplate({
     email,
     orderRef,
     detailUrl,
+    imageUrl
 }: EmailTemplateProps) {
     return (
         <Html>
@@ -54,7 +56,7 @@ export default function EmailTemplate({
                             <Row width={130} align='left'>
                                 <Column align="left">
                                     <Img
-                                        src={`${imageUrl}/_logo.png`}
+                                        src={`${imageUrlBase}/_logo.png`}
                                         alt='Logo'
                                         width="521"
                                         height="300"
@@ -98,19 +100,18 @@ export default function EmailTemplate({
                             <Section>
                                 {Array.from({ length: passager! }).map((item, index) => (
                                     <Row align='left' key={index} className="mt-4">
-                                        <Column>
-                                            <Text className="my-0 me-2">{index + 1}</Text>
+                                        <Column width={20}>
+                                            <Text className="my-0 text-neutral-500 font-medium">{index + 1}</Text>
                                         </Column>
-                                        <Column width={50} align='left'>
-                                            <Button
-                                                className="bg-[#1C6AE410] px-2 py-2 rounded-md">
-                                                <Img
-                                                    src={`${imageUrl}/ticket.png`}
-                                                    width="28"
-                                                    height="28"
-                                                    alt="Ticket"
-                                                />
-                                            </Button>
+                                        <Column width={60} height={50} align='left'>
+                                            <Img
+                                                src={imageUrl}
+                                                width="256"
+                                                height="256"
+                                                alt="Ticket"
+                                                loading="lazy"
+                                                className="w-full h-full object-cover rounded-lg"
+                                            />
                                         </Column>
                                         <Column colSpan={2}>
                                             <Section style={{ marginLeft: 12 }}>
@@ -182,7 +183,7 @@ export default function EmailTemplate({
                                                 <Column align='left' width={40}>
                                                     <Container className="bg-[#1C6AE410] rounded-full px-3 py-3" width={40} align="left">
                                                         <Img
-                                                            src={`${imageUrl}/user.png`}
+                                                            src={`${imageUrlBase}/user.png`}
                                                             width="16"
                                                             height="16"
                                                             alt='Username'
@@ -202,7 +203,7 @@ export default function EmailTemplate({
                                                 <Column align='left' width={40}>
                                                     <Container className="bg-[#1C6AE410] rounded-full px-3 py-3">
                                                         <Img
-                                                            src={`${imageUrl}/phone.png`}
+                                                            src={`${imageUrlBase}/phone.png`}
                                                             width="16"
                                                             height="16"
                                                             alt='Phone'
@@ -225,7 +226,7 @@ export default function EmailTemplate({
                                                 <Column align='left' width={40}>
                                                     <Container className="bg-[#1C6AE410] rounded-full px-3 py-3" >
                                                         <Img
-                                                            src={`${imageUrl}/email.png`}
+                                                            src={`${imageUrlBase}/email.png`}
                                                             width={16}
                                                             height={16}
                                                             alt='email'
@@ -255,7 +256,7 @@ export default function EmailTemplate({
                                                 <Column align='left' width={40}>
                                                     <Container className="bg-[#1C6AE410] rounded-full px-3 py-3">
                                                         <Img
-                                                            src={`${imageUrl}/email.png`}
+                                                            src={`${imageUrlBase}/email.png`}
                                                             width={16}
                                                             height={16}
                                                             alt='Our Email'
@@ -278,7 +279,7 @@ export default function EmailTemplate({
                                                 <Column align='left' width={40}>
                                                     <Container className="bg-[#1C6AE410] rounded-full px-3 py-3">
                                                         <Img
-                                                            src={`${imageUrl}/phone.png`}
+                                                            src={`${imageUrlBase}/phone.png`}
                                                             width={16}
                                                             height={16}
                                                             alt='Phone'
@@ -315,16 +316,17 @@ export default function EmailTemplate({
     )
 };
 
-EmailTemplate.PreviewProps = {
+EmailTemplateTransportation.PreviewProps = {
     name: "Chenter PHAI",
     total: "24",
     issuedDate: "May 22, 2025 20:00",
-    ticketType: "Bus Ticket",
+    ticketType: "VIP Supercar",
     price: "8",
     passager: 3,
     phone: "0964903404",
     email: "chenterphai@gmail.com",
     orderRef: "SR-123456",
+    imageUrl: "https://warmhearted-goose-69.convex.cloud/api/storage/3fa58f6a-18d5-4880-93c5-603ef3d2a149"
 } satisfies EmailTemplateProps;
 
 
