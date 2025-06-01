@@ -36,14 +36,14 @@ const TicketBookingSection = ({
 }) => {
     const today = new Date();
     const [direction, setDirection] = useState("from");
-    const [bookingData, setBookingData] = useState(null);
+    const [bookingData, setBookingData] = useState<string | null>(null);
     const router = useRouter();
 
     React.useEffect(() => {
         const storedData = sessionStorage.getItem('TICKET_BOOKING_DATA');
         if (storedData) {
             try {
-                setBookingData(JSON.parse(storedData));
+                setBookingData(storedData);
             } catch (error) {
                 console.error('Error parsing booking data:', error);
             }
@@ -54,11 +54,11 @@ const TicketBookingSection = ({
     const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
     React.useEffect(() => {
+        if (bookingData) {
+            setSelectedTime(JSON.parse(bookingData!).departureTime)
+        }
         if (selectedTime === null) { // only set if nothing selected yet
-            if (JSON.parse(bookingData!)) {
-                setSelectedTime(JSON.parse(bookingData!).departureTime)
-            }
-            else if (direction === "from" && departureFrom?.length) {
+            if (direction === "from" && departureFrom?.length) {
                 setSelectedTime(departureFrom[0].time);
             } else if (direction === "to" && departureTo?.length) {
                 setSelectedTime(departureTo[0].time);
