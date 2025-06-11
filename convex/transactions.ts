@@ -47,3 +47,10 @@ export const select = query({
     return await ctx.db.get(args.id);
   },
 });
+
+export const get = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("transactions").order("desc").collect();
+  },
+});

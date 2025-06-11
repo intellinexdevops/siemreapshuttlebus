@@ -216,7 +216,7 @@ const BookTransportationMainPage = ({
                 passager: Number(passager),
                 phone: customerInfo?.phoneNumber as string,
                 ticket_type: transportation.title,
-                total: Number(passager) * Number(transportation.price),
+                total: Number(transportation.price),
                 issued_date: issuedDate,
                 special_request: customerInfo?.specialRequest ?? "",
                 payment_method: payment,
@@ -265,7 +265,7 @@ const BookTransportationMainPage = ({
             <div className='container mx-auto bg-white p-5 rounded-lg'>
                 <div className='flex'>
                     <div className='flex flex-col gap-y-2'>
-                        <p className='text-xl font-semibold text-neutral-700'>Private Transportation - Booking Form</p>
+                        <p className='md:text-xl text-lg font-semibold text-neutral-700'>Private Transportation - Booking Form</p>
                         <div className='h-[3px] w-[50%] bg-primary' />
                     </div>
                 </div>
@@ -275,21 +275,37 @@ const BookTransportationMainPage = ({
                     </div>
                 ) : (
                     <div className='mt-6 flex items-center pb-6 border-b'>
-                        <div className='flex items-start gap-3'>
-                            <div className='relative w-[130px] h-[130px] overflow-hidden rounded-md'>
+                        <div className='flex items-start gap-2.5'>
+                            <div className='relative w-[160px] h-[140px] overflow-hidden rounded-md'>
                                 <Image
                                     src={transportation.url}
                                     alt={transportation.title}
-                                    fill
+                                    className='w-[160px] h-[140px] object-cover'
+                                    width={512}
+                                    height={512}
                                     objectFit='cover'
                                 />
                             </div>
-                            <div className='p-4'>
+                            <div className='p-4 py-0'>
                                 <p className='text-lg text-neutral-800 font-medium'>{transportation.title}</p>
                                 <div className='flex items-end gap-2'>
                                     <span className='text-sm text-neutral-500'>Price: </span>
                                     <span className='font-semibold text-sm text-primary'>{parseFloat(transportation.price).toFixed(2)} USD</span>
                                     <span className='text-sm text-neutral-500'>/ {transportation.unit}</span>
+                                </div>
+                                <div className='grid grid-cols-1 md:grid-cols-2 gap-6 mt-2'>
+                                    <div className=''>
+                                        <p className='text-xs text-neutral-800 underline font-medium mb-1'>Include</p>
+                                        {transportation.include?.length && transportation.include.map((item, i) => (
+                                            <div className='text-xs text-neutral-500' key={i}>- {item}</div>
+                                        ))}
+                                    </div>
+                                    <div className=''>
+                                        <p className='text-xs text-neutral-800 underline font-medium mb-1'>Exclude</p>
+                                        {transportation.exclude?.length && transportation.exclude.map((item, i) => (
+                                            <div className='text-xs text-neutral-500' key={i}>- {item}</div>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         </div>

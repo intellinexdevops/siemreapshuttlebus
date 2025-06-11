@@ -25,7 +25,7 @@ export async function POST(request: Request) {
       today.toLocaleString("en-US", { timeZone: "Asia/Phnom_Penh" })
     );
 
-    const total = Number(passager) * Number(price);
+    const total = Number(price);
 
     const { data, error } = await resend.emails.send({
       from: "no-reply <khonkhen@siemreapshuttlebus.com>",
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
         name: requestData.name || "John",
         email: requestData.to,
         issuedDate: moment(cambodiaDate).format("MMM DD, YYYY HH:mm:ss"),
-        passager: parseInt(requestData.passager),
+        passager: requestData.passager,
         phone: requestData.phone,
         price: requestData.price,
         ticketType: requestData.ticketType,
