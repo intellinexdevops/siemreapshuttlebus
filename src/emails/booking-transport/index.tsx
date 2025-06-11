@@ -20,7 +20,7 @@ interface EmailTemplateProps {
     issuedDate?: string;
     ticketType?: string;
     price?: string;
-    passager?: number;
+    passager?: string;
     phone?: string;
     email?: string;
     orderRef?: string;
@@ -98,44 +98,42 @@ export default function EmailTemplateTransportation({
                         <Section style={{ padding: 14 }}>
                             <Text className="text-xl leading-none font-semibold text-neutral-700 mt-0 mb-0">Your Booking</Text>
                             <Section>
-                                {Array.from({ length: passager! }).map((item, index) => (
-                                    <Row align='left' key={index} className="mt-4">
-                                        <Column width={20}>
-                                            <Text className="my-0 text-neutral-500 font-medium">{index + 1}</Text>
-                                        </Column>
-                                        <Column width={60} height={50} align='left'>
-                                            <Img
-                                                src={imageUrl}
-                                                width="256"
-                                                height="256"
-                                                alt="Ticket"
-                                                loading="lazy"
-                                                className="w-full h-full object-cover rounded-lg"
-                                            />
-                                        </Column>
-                                        <Column colSpan={2}>
-                                            <Section style={{ marginLeft: 12 }}>
-                                                <Text className="text-base text-neutral-600 font-medium leading-none mb-0 mt-0">{ticketType}</Text>
-                                                <Link href={`${process.env.NEXT_PUBLIC_BOOKING_DETAIL_URL}/${detailUrl}`} className="text-xs font-normal leading-none underline mt-1.5" >
-                                                    Detail
-                                                </Link>
-                                            </Section>
-                                        </Column>
-                                        <Column align='right'>
-                                            <Row>
-                                                {/* <Column align='right'>
-                                                <Text className="text-neutral-500 leading-none font-medium text-base">{passager}</Text>
+
+                                <Row align='left' className="mt-4">
+
+                                    <Column width={60} height={50} align='left'>
+                                        <Img
+                                            src={imageUrl}
+                                            width="256"
+                                            height="256"
+                                            alt="Ticket"
+                                            loading="lazy"
+                                            className="w-full h-full object-cover rounded-lg"
+                                        />
+                                    </Column>
+                                    <Column colSpan={2}>
+                                        <Section style={{ marginLeft: 12 }}>
+                                            <Text className="text-base text-neutral-600 font-medium leading-none mb-0 mt-0">{ticketType}</Text>
+                                            <Link href={`${process.env.NEXT_PUBLIC_BOOKING_DETAIL_URL}/${detailUrl}`} className="text-xs font-normal leading-none underline mt-1.5" >
+                                                Detail
+                                            </Link>
+                                        </Section>
+                                    </Column>
+                                    <Column align='right'>
+                                        <Row>
+                                            <Column align='right'>
+                                                <Text className="text-neutral-500 leading-none font-medium text-sm">{passager}</Text>
                                             </Column>
                                             <Column align='right'>
-                                                <Text className="text-neutral-500 leading-none font-medium text-base">&times;</Text>
-                                            </Column> */}
-                                                <Column align='right'>
-                                                    <Text className="text-neutral-500 leading-none font-medium text-base">${parseFloat(price!).toFixed(2)}</Text>
-                                                </Column>
-                                            </Row>
-                                        </Column>
-                                    </Row>
-                                ))}
+                                                <Text className="text-neutral-500 leading-none font-medium text-sm">Pax</Text>
+                                            </Column>
+                                            <Column align='right'>
+                                                <Text className="text-neutral-500 leading-none font-medium text-base">${parseFloat(price!).toFixed(2)}</Text>
+                                            </Column>
+                                        </Row>
+                                    </Column>
+                                </Row>
+
                             </Section>
                         </Section>
 
@@ -318,11 +316,11 @@ export default function EmailTemplateTransportation({
 
 EmailTemplateTransportation.PreviewProps = {
     name: "Chenter PHAI",
-    total: "24",
+    total: "35",
     issuedDate: "May 22, 2025 20:00",
     ticketType: "VIP Supercar",
-    price: "8",
-    passager: 3,
+    price: "35",
+    passager: '2-5',
     phone: "0964903404",
     email: "chenterphai@gmail.com",
     orderRef: "SR-123456",

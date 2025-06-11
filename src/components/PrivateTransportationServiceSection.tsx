@@ -13,6 +13,8 @@ export interface TransportationType {
     title: string;
     unit: string;
     url: string;
+    include?: string[];
+    exclude?: string[];
 }
 
 const PrivateTransportationServiceSection = ({
