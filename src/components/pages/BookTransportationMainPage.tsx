@@ -206,7 +206,7 @@ const BookTransportationMainPage = ({
             const orderRef = `SR-${Date.now().toString().slice(-6)}`;
             const departureDate = selectedDate ? `${moment(selectedDate).format("DD MMM YYYY")} / ${selectedTime}` : "";
             const issuedDate = moment(today).format("MMM DD, YYYY");
-            const returnDateData = returnDate && trip === "Round trip" ? `${moment(returnDate).format("MMM DD, YYYY")} / ${moment(returnTime).format("HH:mm A")}` : "";
+            const returnDateData = returnDate && trip === "Round trip" ? `${moment(returnDate).format("MMM DD, YYYY")} / ${returnTime}` : "";
 
             await mutateTransaction({
                 order_ref: orderRef,
@@ -262,11 +262,11 @@ const BookTransportationMainPage = ({
             {isLoading && (
                 <Loading />
             )}
-            <div className='container mx-auto bg-white p-5 rounded-lg'>
+            <div className='container mx-auto bg-white p-5 max-sm:p-3 rounded-lg'>
                 <div className='flex'>
                     <div className='flex flex-col gap-y-2'>
-                        <p className='md:text-xl text-lg font-semibold text-neutral-700'>Private Transportation - Booking Form</p>
-                        <div className='h-[3px] w-[50%] bg-primary' />
+                        <p className='md:text-xl text-lg font-semibold text-neutral-700 max-sm:text-sm'>Private Transportation - Booking Form</p>
+                        <div className='h-[3px] max-sm:h-[2px] w-[50%] bg-primary' />
                     </div>
                 </div>
                 {transportation === undefined ? (
@@ -274,26 +274,26 @@ const BookTransportationMainPage = ({
                         <Skeleton className='w-full h-[150px] rounded-lg' />
                     </div>
                 ) : (
-                    <div className='mt-6 flex items-center pb-6 border-b'>
-                        <div className='flex items-start gap-2.5'>
-                            <div className='relative w-[160px] h-[140px] overflow-hidden rounded-md'>
+                    <div className='mt-6 items-center pb-6 border-b'>
+                        <div className='flex max-[460px]:flex-col items-start gap-2.5'>
+                            <div className='relative w-[160px] max-[460px]:w-full h-[140px] max-[460px]:h-[200px] overflow-hidden rounded-md'>
                                 <Image
                                     src={transportation.url}
                                     alt={transportation.title}
-                                    className='w-[160px] h-[140px] object-cover'
+                                    className='w-full h-full object-cover'
                                     width={512}
                                     height={512}
                                     objectFit='cover'
                                 />
                             </div>
-                            <div className='p-4 py-0'>
-                                <p className='text-lg text-neutral-800 font-medium'>{transportation.title}</p>
+                            <div className='p-4 max-[460px]:p-2 py-0'>
+                                <p className='text-lg text-neutral-800 font-medium max-[460px]:text-sm'>{transportation.title}</p>
                                 <div className='flex items-end gap-2'>
                                     <span className='text-sm text-neutral-500'>Price: </span>
                                     <span className='font-semibold text-sm text-primary'>{parseFloat(transportation.price).toFixed(2)} USD</span>
                                     <span className='text-sm text-neutral-500'>/ {transportation.unit}</span>
                                 </div>
-                                <div className='grid grid-cols-1 md:grid-cols-2 gap-6 mt-2'>
+                                <div className='grid grid-cols-1 md:grid-cols-2 gap-6 mt-2 max-[460px]:mt-4'>
                                     <div className=''>
                                         <p className='text-xs text-neutral-800 underline font-medium mb-1'>Include</p>
                                         {transportation.include?.length && transportation.include.map((item, i) => (
