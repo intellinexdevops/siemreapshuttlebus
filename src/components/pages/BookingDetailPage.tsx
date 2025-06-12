@@ -82,21 +82,21 @@ const BookingDetailPage = ({
                             </div>
                             <div>
                                 <p className='text-xs text-neutral-500'>Special Request</p>
-                                <p className='text-sm font-medium text-neutral-700'>{transaction.special_request ?? "-"}</p>
+                                <p className='text-sm font-medium text-neutral-700'>{transaction.special_request !== "" ? transaction.special_request : "-"}</p>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div className='bg-neutral-50 shadow p-4 rounded-lg flex items-center justify-between mt-4'>
                     <div>
-                        <p className='text-sm font-medium text-neutral-600'>Total Amount</p>
-                        <p className='text-lg font-semibold text-primary'>${parseFloat(`${transaction.total}`).toFixed(2)}</p>
+                        <p className='text-sm font-medium text-neutral-600 max-[460px]:text-sm'>Total Amount</p>
+                        <p className='text-lg font-semibold text-primary max-[460px]:text-sm'>${parseFloat(`${transaction.total}`).toFixed(2)}</p>
                     </div>
                     <div className='flex items-center gap-x-2'>
-                        <Button variant="outline" className='text-neutral-600 text-sm cursor-pointer px-8'>
+                        <Button variant="outline" className='text-neutral-600 text-xs cursor-pointer px-8'>
                             Print
                         </Button>
-                        <Button className='text-sm cursor-pointer px-8' onClick={handleClose}>
+                        <Button className='text-xs cursor-pointer px-8' onClick={handleClose}>
                             Done
                         </Button>
                     </div>

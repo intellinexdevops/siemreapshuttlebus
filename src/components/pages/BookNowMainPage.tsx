@@ -210,7 +210,7 @@ const BookNowMainPage = ({
             const orderRef = `SR-${Date.now().toString().slice(-6)}`;
             const departureDate = selectedDate ? `${moment(selectedDate).format("DD MMM YYYY")} / ${selectedTime}` : "";
             const issuedDate = moment(today).format("MMM DD, YYYY");
-            const returnDateData = returnDate && trip === "Round trip" ? `${moment(returnDate).format("MMM DD, YYYY")} / ${moment(returnTime).format("HH:mm A")}` : "";
+            const returnDateData = returnDate && trip === "Round trip" ? `${moment(returnDate).format("MMM DD, YYYY")} / ${returnTime}` : "";
 
             await mutateTransaction({
                 order_ref: orderRef,
