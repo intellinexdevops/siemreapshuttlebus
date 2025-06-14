@@ -1,3 +1,4 @@
+"use cache";
 import BookNowMainPage from "@/components/pages/BookNowMainPage";
 import { preloadQuery } from "convex/nextjs";
 import { api } from "../../../../convex/_generated/api";

@@ -1,3 +1,4 @@
+"use cache";
 import BookTransportationMainPage from '@/components/pages/BookTransportationMainPage'
 import React from 'react'
 import { preloadQuery } from "convex/nextjs";
