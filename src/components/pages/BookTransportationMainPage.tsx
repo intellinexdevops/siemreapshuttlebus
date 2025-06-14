@@ -20,6 +20,7 @@ import axios from 'axios';
 import { Payment } from '@/types/payments';
 import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
 import Link from 'next/link';
+import { sendMessage } from '@/lib/telegram';
 
 type CustomerInfoType = {
     firstName: string;
@@ -245,6 +246,7 @@ const BookTransportationMainPage = ({
                 if (response.data.status.code === 0) {
                     setCustomerInfo(null)
                     setIsSuccess(true)
+                    await sendMessage(`${orderRef} - ${customerInfo.firstName} ${customerInfo.lastName} has booked your private transportation services. Please check detail. https://siemreapshuttlebus.netlify.app/booking-detail/${res}`)
                 }
             }).catch((err) => {
                 console.log(err);

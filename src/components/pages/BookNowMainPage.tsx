@@ -23,6 +23,7 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { Payment } from '@/types/payments';
+import { sendMessage } from '@/lib/telegram';
 
 type CustomerInfoType = {
     firstName: string;
@@ -248,6 +249,7 @@ const BookNowMainPage = ({
                 if (response.data.status.code === 0) {
                     setCustomerInfo(null)
                     setIsSuccess(true)
+                    await sendMessage(`${orderRef} - ${customerInfo.firstName} ${customerInfo.lastName} has booked ${passager} bus tickets. Please check details : https://siemreapshuttlebus.netlify.app/booking-detail/${res}`)
                 }
             }).catch((err) => {
                 console.log(err);
@@ -259,7 +261,6 @@ const BookNowMainPage = ({
             setIsLoading(false)
         }
     }
-
     return (
         <section className='mt-[132px] mb-[100px]' >
             {isLoading && (
