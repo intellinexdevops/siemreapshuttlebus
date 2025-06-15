@@ -167,7 +167,7 @@ const TicketBookingSection = ({
             <div className='container mx-auto bg-white p-5 rounded-lg'>
                 <div className='flex'>
                     <div className='flex flex-col gap-y-2'>
-                        <p className='text-xl font-semibold text-neutral-700'>Ticket Booking</p>
+                        <p className='text-xl font-semibold text-neutral-700'>Airport Bus Ticket Booking</p>
                         <div className='h-[3px] bg-primary' />
                     </div>
                 </div>

@@ -87,7 +87,7 @@ const BookingDetailPage = ({
                         </div>
                     </div>
                 </div>
-                <div className='bg-neutral-50 shadow p-4 rounded-lg flex items-center justify-between mt-4'>
+                <div className='bg-neutral-50 shadow p-4 rounded-lg flex max-sm:flex-col max-sm:items-start max-sm:gap-y-3 items-center justify-between mt-4'>
                     <div>
                         <p className='text-sm font-medium text-neutral-600 max-[460px]:text-sm'>Total Amount</p>
                         <p className='text-lg font-semibold text-primary max-[460px]:text-sm'>${parseFloat(`${transaction.total}`).toFixed(2)}</p>

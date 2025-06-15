@@ -3,6 +3,8 @@ import React from 'react'
 import { preloadQuery } from "convex/nextjs";
 import { Id } from "../../../../../../convex/_generated/dataModel";
 import { api } from "../../../../../../convex/_generated/api";
+import { Metadata } from 'next';
+
 
 interface BookingDetailPageProps {
     params: Promise<{
@@ -10,6 +12,9 @@ interface BookingDetailPageProps {
     }>
 }
 
+export const metadata: Metadata = {
+    title: "Booking Summary"
+}
 export default async function Page({ params }: BookingDetailPageProps) {
     const { slug } = await params
 

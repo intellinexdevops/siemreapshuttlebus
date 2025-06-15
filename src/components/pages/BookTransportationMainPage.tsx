@@ -1,16 +1,16 @@
 "use client"
 
-import React, { useRef, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import TextField from "@mui/material/TextField"
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import moment from 'moment';
 
-import { Alert, CircularProgress, FormControl, IconButton, InputAdornment, InputLabel, MenuItem, OutlinedInput, Select, SelectChangeEvent, Snackbar } from '@mui/material';
+import { Alert, FormControl, IconButton, InputAdornment, InputLabel, MenuItem, OutlinedInput, Select, SelectChangeEvent, Snackbar } from '@mui/material';
 import SwapHorizOutlined from "@mui/icons-material/SwapHorizOutlined"
 import { Button } from '../ui/button';
 import ReCAPTCHA from "react-google-recaptcha";
-import { Preloaded, useMutation, usePreloadedQuery, useQuery } from 'convex/react';
+import { Preloaded, useMutation, usePreloadedQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { Skeleton } from "@/components/ui/skeleton"
 import Image from 'next/image';
@@ -21,6 +21,7 @@ import { Payment } from '@/types/payments';
 import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
 import Link from 'next/link';
 import { sendMessage } from '@/lib/telegram';
+import { isValidEmail } from '@/lib/definitions';
 
 type CustomerInfoType = {
     firstName: string;
@@ -30,6 +31,8 @@ type CustomerInfoType = {
     paymentInfo: string;
     specialRequest: string | undefined;
 }
+
+const ONE_DAY = 1000 * 60 * 60 * 24;
 
 const BookTransportationMainPage = ({
     preloadedTransportation,
@@ -42,58 +45,88 @@ const BookTransportationMainPage = ({
     const transportation: TransportationType = usePreloadedQuery(preloadedTransportation)
     const payments: Payment[] = usePreloadedQuery(preloadedPayment);
     const mutateTransaction = useMutation(api.transactions.create);
-    const departureFrom = useQuery(api.airplane_time.getFrom);
-    const departureTo = useQuery(api.airplane_time.getTo);
+    // const departureFrom = useQuery(api.airplane_time.getFrom);
+    // const departureTo = useQuery(api.airplane_time.getTo);
 
     const [direction, setDirection] = useState("from");
     const [tranId, setTranId] = useState<string | null>(null);
 
     const today = new Date();
+
+    // React.useEffect(() => {
+
+    //     if (direction === "from" && departureFrom?.length) {
+    //         setSelectedTime(departureFrom[0].time);
+    //     } else if (direction === "to" && departureTo?.length) {
+    //         setSelectedTime(departureTo[0].time);
+    //     }
+
+    // }, [direction, departureFrom, departureTo]);
     // Departure time related state and handlers
-    const [selectedTime, setSelectedTime] = useState<string | null>(null);
-
-    React.useEffect(() => {
-        if (selectedTime === null) { // only set if nothing selected yet
-            if (direction === "from" && departureFrom?.length) {
-                setSelectedTime(departureFrom[0].time);
-            } else if (direction === "to" && departureTo?.length) {
-                setSelectedTime(departureTo[0].time);
-            }
-        }
-    }, [direction, departureFrom, departureTo, selectedTime]);
-
-    const handleTimeChange = (date: string | null) => {
+    const [selectedTime, setSelectedTime] = useState<Date | null>(today);
+    const [isTimeOpen, setIsTimeOpen] = useState<boolean>(false);
+    const handleTimeFocus = () => {
+        setIsTimeOpen(true);
+    }
+    const handleTimeChange = (date: Date | null) => {
         setSelectedTime(date);
-        // setIsOpen(false);
+        setIsTimeOpen(false);
     };
 
 
 
     // Return time related state and handlers
-    const [returnTime, setReturnTime] = useState<string | null>(null);
-
-    const handleChangeReturnTime = (date: string | null) => {
+    const [returnTime, setReturnTime] = useState<Date | null>(today);
+    const [isReturnTimeOpen, setIsReturnTimeOpen] = useState<boolean>(false);
+    const handleReturnTimeFocus = () => {
+        setIsReturnTimeOpen(true);
+    }
+    const handleChangeReturnTime = (date: Date | null) => {
         setReturnTime(date)
+        setIsReturnTimeOpen(false)
     }
 
     // Departure date related state and handlers
-    const [selectedDate, setSelectedDate] = useState<Date | null>(today);
+    const [startDate, setStartDate] = useState<Date | null>(null);
+    const [endDate, setEndDate] = useState<Date | null>(null);
     const [isDateOpen, setIsDateOpen] = useState<boolean>(false);
-    const datePickerRef = useRef(null);
 
     const handleDateFocus = () => {
         setIsDateOpen(true);
     };
 
-    const handleDateChange = (date: Date | null) => {
-        setSelectedDate(date);
-        setIsDateOpen(false);
-
-        // If return date is earlier than the new departure date, update it
-        if (returnDate && date && returnDate < date) {
-            setReturnDate(date);
-        }
+    const handleDateChange = (dates: [Date | null, Date | null]) => {
+        const [start, end] = dates;
+        setStartDate(start);
+        setEndDate(end);
     };
+
+    // const numberOfDays = useMemo(() => {
+    //     if (startDate && endDate) {
+    //         const diff = Math.ceil(
+    //             Math.abs(endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+    //         );
+    //         return diff === 0 ? 1 : diff;
+    //     }
+    //     if (startDate && !endDate) {
+    //         return 1;
+    //     }
+    //     return null;
+    // }, [startDate, endDate]);
+    const numberOfDays = useMemo(() => {
+        if (startDate && endDate) {
+            // Strip the time portion to avoid timezone‑hour drift
+            const start = new Date(startDate).setHours(0, 0, 0, 0);
+            const end = new Date(endDate).setHours(0, 0, 0, 0);
+
+            const diffDays = Math.floor(Math.abs(end - start) / ONE_DAY) + 1;
+            return diffDays;
+        }
+        if (startDate && !endDate) {
+            return 1;
+        }
+        return null;
+    }, [startDate, endDate]);
 
     // Return date related state and handlers
     const [returnDate, setReturnDate] = useState<Date | null>(today);
@@ -131,9 +164,9 @@ const BookTransportationMainPage = ({
         setTrip(event.target.value as string);
 
         // When switching to the round trip, initialize the return date and time if needed
-        if (event.target.value === 'Round trip' && selectedDate) {
+        if (event.target.value === 'Round trip' && endDate) {
             // Set the return date to at least the departure date
-            const nextDay = new Date(selectedDate);
+            const nextDay = new Date(endDate);
             nextDay.setDate(nextDay.getDate() + 1);
             setReturnDate(nextDay);
         }
@@ -149,9 +182,11 @@ const BookTransportationMainPage = ({
         if (direction === "from") {
             setDirection("to")
             setDisplayDirection(`${siemreap} - ${airport.name}`)
+            // setSelectedTime(departureTo![0]?.time)
         } else {
             setDirection("from")
             setDisplayDirection(`${airport.name} - ${siemreap}`)
+            // setSelectedTime(departureFrom![0]?.time)
         }
     }
 
@@ -191,11 +226,27 @@ const BookTransportationMainPage = ({
     const [isLoading, setIsLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
 
-    const [alert, setAlert] = useState(false)
+    const [alert, setAlert] = useState(false);
+    const [error, setError] = useState('')
 
     const handleBookNow = async () => {
 
         if (!customerInfo?.email || !customerInfo.firstName || !customerInfo.lastName || !customerInfo.phoneNumber) {
+            setError('Please fill all fields required.');
+            setAlert(true);
+            setTimeout(() => { setAlert(false) }, 6000)
+            return;
+        }
+
+        if (!isValidEmail(customerInfo.email)) {
+            setError('Invalid email address.');
+            setAlert(true);
+            setTimeout(() => { setAlert(false) }, 6000)
+            return;
+        }
+
+        if (Number(passager) <= 0) {
+            setError('Passager must be at least 1.');
             setAlert(true);
             setTimeout(() => { setAlert(false) }, 6000)
             return;
@@ -205,9 +256,9 @@ const BookTransportationMainPage = ({
         try {
 
             const orderRef = `SR-${Date.now().toString().slice(-6)}`;
-            const departureDate = selectedDate ? `${moment(selectedDate).format("DD MMM YYYY")} / ${selectedTime}` : "";
+            const departureDate = startDate ? `${moment(startDate).format("DD MMM YYYY")} / ${moment(selectedTime).format('HH:mm A')}` : "";
             const issuedDate = moment(today).format("MMM DD, YYYY");
-            const returnDateData = returnDate && trip === "Round trip" ? `${moment(returnDate).format("MMM DD, YYYY")} / ${returnTime}` : "";
+            const returnDateData = returnDate && trip === "Round trip" ? `${moment(returnDate).format("MMM DD, YYYY")} / ${moment(returnTime).format('HH:mm A')}` : "";
 
             await mutateTransaction({
                 order_ref: orderRef,
@@ -217,7 +268,7 @@ const BookTransportationMainPage = ({
                 passager: Number(passager),
                 phone: customerInfo?.phoneNumber as string,
                 ticket_type: transportation.title,
-                total: Number(transportation.price),
+                total: Number(transportation.price) * (numberOfDays ?? 1),
                 issued_date: issuedDate,
                 special_request: customerInfo?.specialRequest ?? "",
                 payment_method: payment,
@@ -234,7 +285,7 @@ const BookTransportationMainPage = ({
                     ticketType: transportation.title,
                     phone: customerInfo?.phoneNumber,
                     passager: Number(passager),
-                    price: transportation.price as string,
+                    price: (Number(transportation.price) * (numberOfDays ?? 1)),
                     email: customerInfo?.email,
                     detailUrl: res,
                     orderRef: orderRef,
@@ -290,22 +341,26 @@ const BookTransportationMainPage = ({
                             </div>
                             <div className='p-4 max-[460px]:p-2 py-0'>
                                 <p className='text-lg text-neutral-800 font-medium max-[460px]:text-sm'>{transportation.title}</p>
-                                <div className='flex items-end gap-2'>
-                                    <span className='text-sm text-neutral-500'>Price: </span>
-                                    <span className='font-semibold text-sm text-primary'>{parseFloat(transportation.price).toFixed(2)} USD</span>
-                                    <span className='text-sm text-neutral-500'>/ {transportation.unit}</span>
+                                <div className='flex items-center gap-x-5'>
+                                    <div className='flex items-end gap-2'>
+                                        <span className='text-sm text-neutral-500'>Price: </span>
+                                        <span className='font-semibold text-sm text-primary'>{parseFloat(transportation.price).toFixed(2)} USD</span>
+                                        <span className='text-sm text-neutral-500'>/ {transportation.unit}</span>
+                                    </div>
+                                    <div className='w-1 h-1 rounded-full bg-neutral-400' />
+                                    <div className='text-sm text-neutral-500'>{transportation.capacity}</div>
                                 </div>
                                 <div className='grid grid-cols-1 md:grid-cols-2 gap-6 mt-2 max-[460px]:mt-4'>
                                     <div className=''>
                                         <p className='text-xs text-neutral-800 underline font-medium mb-1'>Include</p>
                                         {transportation.include?.length && transportation.include.map((item, i) => (
-                                            <div className='text-xs text-neutral-500' key={i}>- {item}</div>
+                                            <div className='text-xs text-neutral-500' key={i}>{item}</div>
                                         ))}
                                     </div>
                                     <div className=''>
                                         <p className='text-xs text-neutral-800 underline font-medium mb-1'>Exclude</p>
                                         {transportation.exclude?.length && transportation.exclude.map((item, i) => (
-                                            <div className='text-xs text-neutral-500' key={i}>- {item}</div>
+                                            <div className='text-xs text-neutral-500' key={i}>{item}</div>
                                         ))}
                                     </div>
                                 </div>
@@ -314,7 +369,7 @@ const BookTransportationMainPage = ({
                     </div>
                 )}
                 <div className='mt-6'>
-                    <div className='grid grid-cols-1 lg:grid-cols-6 md:grid-cols-2 gap-x-4 gap-y-8'>
+                    <div className='grid grid-cols-1 lg:grid-cols-6 md:grid-cols-2 gap-x-3 gap-y-8'>
                         <div className='col-span-2'>
                             <FormControl fullWidth variant='outlined'>
                                 <InputLabel htmlFor="direction">From - To</InputLabel>
@@ -339,7 +394,7 @@ const BookTransportationMainPage = ({
                         </div>
 
                         <div className='relative lg:col-span-1 col-span-2'>
-                            <FormControl fullWidth>
+                            {/* <FormControl fullWidth>
                                 {departureFrom && departureTo ? (
                                     <>
                                         <InputLabel id="departure-time-select-label">Departure Time</InputLabel>
@@ -388,8 +443,32 @@ const BookTransportationMainPage = ({
 
                                     </>
                                 )}
-                            </FormControl>
+                            </FormControl> */}
 
+                            <TextField
+                                required
+                                label="Departure time"
+                                className='w-full'
+                                id="departure-time-field"
+                                onFocus={handleTimeFocus}
+                                value={selectedTime ? moment(selectedTime).format("hh:mm A") : ""}
+                                InputProps={{ readOnly: true }}
+                            />
+                            {isTimeOpen && (
+                                <div className='absolute left-1/2 top-8 z-50'>
+                                    <DatePicker
+                                        selected={selectedTime}
+                                        className='hidden'
+                                        onChange={(date) => handleTimeChange(date)}
+                                        timeIntervals={15}
+                                        showTimeSelect
+                                        showTimeSelectOnly
+                                        open={true}
+                                        onClickOutside={() => setIsTimeOpen(false)}
+                                        timeFormat='HH:mm a'
+                                    />
+                                </div>
+                            )}
                         </div>
                         <div className='relative lg:col-span-1 col-span-2'>
                             <TextField
@@ -398,17 +477,25 @@ const BookTransportationMainPage = ({
                                 className='w-full'
                                 id="departure-date-field"
                                 onFocus={handleDateFocus}
-                                value={selectedDate ? moment(selectedDate).format("DD MMM YYYY") : ""}
+                                value={startDate ? moment(startDate).format("DD MMM YYYY") : moment(today).format("DD MMM YYYY")}
                                 InputProps={{ readOnly: true }}
                             />
+                            {numberOfDays && (
+                                <p className="text-gray-800 font-medium text-xs absolute top-1.5 right-1.5">
+                                    <span className="font-bold text-xs">{numberOfDays}</span>{" "}
+                                    {numberOfDays === 1 ? "day" : "days"}
+                                </p>
+                            )}
                             {isDateOpen && (
                                 <div className='absolute left-1/2 top-8 z-10'>
                                     <DatePicker
-                                        selected={selectedDate}
+                                        selectsRange
+                                        selected={startDate}
                                         className='hidden'
-                                        onChange={(date) => handleDateChange(date)}
+                                        onChange={handleDateChange}
                                         timeIntervals={15}
-                                        ref={datePickerRef}
+                                        startDate={startDate}
+                                        endDate={endDate}
                                         open={true}
                                         onClickOutside={() => setIsDateOpen(false)}
                                         minDate={today}
@@ -461,7 +548,7 @@ const BookTransportationMainPage = ({
                                         className='w-full'
                                         id="return-date-field"
                                         onFocus={handleReturnDateFocus}
-                                        value={returnDate ? moment(returnDate).format("DD MMM YYYY") : ""}
+                                        value={returnDate && returnDate ? moment(returnDate).format("DD MMM YYYY") : ""}
                                         InputProps={{ readOnly: true }}
                                     />
                                     {isReturnDateOpen && (
@@ -474,14 +561,14 @@ const BookTransportationMainPage = ({
                                                 ref={returnDatePickerRef}
                                                 open={true}
                                                 onClickOutside={() => setIsReturnDateOpen(false)}
-                                                minDate={selectedDate || today}
+                                            // minDate={selectedDate || today}
                                             />
                                         </div>
                                     )}
                                 </div>
 
                                 <div className='relative lg:col-span-1 col-span-2'>
-                                    <FormControl fullWidth>
+                                    {/* <FormControl fullWidth>
                                         {departureTo ? (
                                             <>
                                                 <InputLabel id="return-time-select-label">Return Time</InputLabel>
@@ -515,7 +602,32 @@ const BookTransportationMainPage = ({
 
                                             </>
                                         )}
-                                    </FormControl>
+                                    </FormControl> */}
+                                    <TextField
+                                        required
+                                        label="Return time"
+                                        className='w-full'
+                                        id="return-time-field"
+                                        onFocus={handleReturnTimeFocus}
+                                        value={returnTime ? moment(returnTime).format("hh:mm A") : ""}
+                                        InputProps={{ readOnly: true }}
+                                    />
+                                    {isReturnTimeOpen && (
+                                        <div className='absolute left-1/2 top-8 z-50'>
+                                            <DatePicker
+                                                selected={returnTime}
+                                                className='hidden'
+                                                onChange={(date) => handleChangeReturnTime(date)}
+                                                timeIntervals={15}
+                                                showTimeSelect
+                                                showTimeSelectOnly
+                                                open={true}
+                                                onClickOutside={() => setIsReturnTimeOpen(false)}
+                                                minDate={today}
+                                                timeFormat='HH:mm a'
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             </>
                         )}
@@ -717,7 +829,7 @@ const BookTransportationMainPage = ({
                 autoHideDuration={6000}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
             >
-                <Alert severity='error' variant='filled' sx={{ width: "100%" }}>Please fill all fields required.</Alert>
+                <Alert severity='error' variant='filled' sx={{ width: "100%" }}>{error}</Alert>
             </Snackbar>
         </section>
     )
