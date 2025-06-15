@@ -36,3 +36,11 @@ export type FormState =
       message?: string;
     }
   | undefined;
+
+export function isValidEmail(email: string): boolean {
+  // A commonly used regex for email validation
+  // It's not 100% perfect for all edge cases (RFC-compliant emails are extremely complex),
+  // but it's generally sufficient for most applications and prevents common typos.
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}

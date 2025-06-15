@@ -24,6 +24,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Payment } from '@/types/payments';
 import { sendMessage } from '@/lib/telegram';
+import { isValidEmail } from '@/lib/definitions';
 
 type CustomerInfoType = {
     firstName: string;
@@ -153,9 +154,11 @@ const BookNowMainPage = ({
         if (direction === "from") {
             setDirection("to")
             setDisplayDirection(`${siemreap} - ${airport.name}`)
+            setSelectedTime(departureTo![0]?.time)
         } else {
             setDirection("from")
             setDisplayDirection(`${airport.name} - ${siemreap}`)
+            setSelectedTime(departureFrom![0]?.time)
         }
     }
 
@@ -195,11 +198,33 @@ const BookNowMainPage = ({
     const [isLoading, setIsLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
 
-    const [alert, setAlert] = useState(false)
+    const [alert, setAlert] = useState(false);
+    const [error, setError] = useState('')
 
     const handleBookNow = async () => {
+        if (!selectedTime) {
+            setError('Please select departure time.')
+            setAlert(true);
+            setTimeout(() => { setAlert(false) }, 6000)
+            return;
+        }
+
+        if (passager <= 0) {
+            setError('Passager must be at least 1.')
+            setAlert(true);
+            setTimeout(() => { setAlert(false) }, 6000)
+            return;
+        }
 
         if (!customerInfo?.email || !customerInfo.firstName || !customerInfo.lastName || !customerInfo.phoneNumber) {
+            setError('Please fill all fields required.')
+            setAlert(true);
+            setTimeout(() => { setAlert(false) }, 6000)
+            return;
+        }
+
+        if (!isValidEmail(customerInfo.email)) {
+            setError('Invalid email address.')
             setAlert(true);
             setTimeout(() => { setAlert(false) }, 6000)
             return;
@@ -269,7 +294,7 @@ const BookNowMainPage = ({
             <div className='container mx-auto bg-white p-5 rounded-lg'>
                 <div className='flex'>
                     <div className='flex flex-col gap-y-2'>
-                        <p className='text-xl font-semibold text-neutral-700'>Ticket Booking</p>
+                        <p className='text-xl font-semibold text-neutral-700'>Airport Bus Ticket Booking</p>
                         <div className='h-[3px] bg-primary' />
                     </div>
                 </div>
@@ -694,7 +719,7 @@ const BookNowMainPage = ({
                 autoHideDuration={6000}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
             >
-                <Alert severity='error' variant='filled' sx={{ width: "100%" }}>Please fill all fields required.</Alert>
+                <Alert severity='error' variant='filled' sx={{ width: "100%" }}>{error}</Alert>
             </Snackbar>
         </section>
     )

@@ -32,7 +32,7 @@ const AirportShuttleBusSection = ({
                                 Bus Station in <br /> Town
                             </div>
                             <div>
-                                <div className='bg-white text-neutral-800 px-1.5 py-1 text-sm font-semibold rounded-md'>
+                                <div className='bg-white text-neutral-800 px-2 py-1 text-xl font-semibold rounded-md'>
                                     $8
                                 </div>
                             </div>

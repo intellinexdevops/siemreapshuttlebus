@@ -3,6 +3,7 @@ import Image from 'next/image'
 import React from 'react'
 // import Navigation from './Navigation'
 import Link from 'next/link'
+import { Send } from 'lucide-react'
 
 const HeaderComponent = () => {
 
@@ -31,7 +32,15 @@ const HeaderComponent = () => {
                         </li>
                     </ul>
                 </nav>
-                <div className='flex justify-end'>
+                <div className='flex justify-end gap-5'>
+                    <Link href='https://t.me/siemreapshuttlebus1bot/miniapp' target='_blank' >
+                        <div className='flex items-center gap-2'>
+                            <div className='flex items-center justify-center w-5 h-5'>
+                                <Send size={16} className='text-primary' />
+                            </div>
+                            <span className='text-sm max-sm:hidden text-neutral-500'>Mini App</span>
+                        </div>
+                    </Link>
                     <Link href="/help-center">
                         <div className='flex items-center gap-2'>
                             <Image
@@ -41,7 +50,7 @@ const HeaderComponent = () => {
                                 alt='Help'
                                 loading='lazy'
                             />
-                            <span className='text-sm text-neutral-500'>
+                            <span className='text-sm text-neutral-500 max-[470px]:hidden'>
                                 Help
                             </span>
                         </div>

@@ -1,4 +1,3 @@
-"use cache";
 import HomePage from "@/components/pages/HomePage";
 
 import { preloadQuery } from "convex/nextjs";
